@@ -1,0 +1,1153 @@
+<!doctype html>
+<html lang="fa">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Mini FPS V74 - Smooth Performance and High Graphics</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#11161b;font-family:Arial,sans-serif;color:#fff;touch-action:none}
+#c{position:fixed;inset:0;width:100%;height:100%;display:block}
+#hud{position:fixed;inset:0;pointer-events:none}
+#info{display:none;position:absolute;left:14px;top:14px;background:#07111dcc;border:1px solid #ffffff22;border-radius:13px;padding:10px 13px;line-height:1.5;font-size:13px}
+#coverToast{position:absolute;left:50%;top:66px;transform:translateX(-50%);padding:9px 14px;border:1px solid #69f0a6;border-radius:12px;background:#092719e8;color:#a9ffcb;font-weight:900;font-size:13px;text-shadow:0 1px 3px #000;box-shadow:0 4px 14px #0007;opacity:0;transition:opacity .12s;white-space:nowrap}
+#cross{position:absolute;left:50%;top:50%;width:22px;height:22px;transform:translate(-50%,-50%)}
+#cross:before,#cross:after{content:"";position:absolute;background:#fff;box-shadow:0 1px 4px #000}
+#cross:before{width:2px;height:22px;left:10px;top:0}
+#cross:after{height:2px;width:22px;left:0;top:10px}
+#topHud{position:absolute;right:12px;top:12px;display:flex;gap:7px;align-items:center;pointer-events:auto}
+#topHud .pill{background:#07111de8;border:1px solid #ffffff35;border-radius:12px;padding:9px 11px;font-weight:900;font-size:13px;box-shadow:0 4px 12px #0006}
+#shopBtn{min-width:76px;min-height:43px;background:linear-gradient(135deg,#f5b938,#e88317);color:#241404;border:0}
+#shopScreen,#roundScreen{position:fixed;inset:0;z-index:9;display:none;align-items:center;justify-content:center;padding:12px;background:#050a10c9;touch-action:manipulation}
+#shopCard,#roundCard{width:min(390px,calc(100vw - 20px));max-height:calc(100dvh - 12px);overflow-y:auto;padding:8px;border:1px solid #ffffff35;border-radius:18px;background:linear-gradient(145deg,#1b2732,#0c1219);text-align:center;box-shadow:0 18px 55px #0009}
+#shopCard h2,#roundCard h2{margin:0 0 10px}
+#shopCard p,#roundCard p{color:#c6d2dc;line-height:1.45;margin:6px 0 10px;font-size:13px}
+#shopCard{display:flex;flex-direction:column;gap:2px;max-width:360px}#shopCard h2{margin-bottom:3px}#shopCard p{margin:2px 0 4px}#shopCard .shopAction{width:100%;margin-top:0;min-height:36px;padding:5px 6px;font-size:12px;background:#173b2b;border-color:#43d987}
+#closeShop,#continueRound{width:100%;margin-top:4px;min-height:38px}#shopActions{display:grid;grid-template-columns:1fr 1fr;gap:5px}#shopActions .shopAction{min-height:32px;padding:4px;font-size:11px}
+#status{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);width:min(370px,62vw);display:flex;flex-direction:column;gap:5px;align-items:stretch}
+.meter{width:100%;display:flex;flex-direction:column;gap:2px}
+.meterLabel{display:flex;justify-content:space-between;font-size:11px;font-weight:800;text-shadow:0 1px 4px #000;line-height:1.1;padding:0 3px}
+.meterLabel b{font-variant-numeric:tabular-nums}
+#hpbox{width:100%;height:19px;border-radius:12px;padding:3px;background:#0a1016dd;border:1px solid #ffffff35;box-shadow:0 3px 10px #0008}
+#hpbar{height:100%;width:100%;border-radius:8px;background:linear-gradient(90deg,#20d56b,#62ef83);box-shadow:0 0 8px #32d96b66}
+#staminabox{width:100%;height:14px;border-radius:10px;padding:2px;background:#0a1016cc;border:1px solid #ffffff30;box-shadow:0 3px 9px #0006}
+#staminabar{height:100%;width:100%;border-radius:7px;background:linear-gradient(90deg,#198cff,#62c7ff);box-shadow:0 0 8px #168dff55}
+#ammo{font-size:20px;font-weight:900;text-shadow:0 2px 4px #000}
+#gun{position:absolute;left:auto;right:26px;bottom:-34px;width:min(330px,64vw);height:auto;aspect-ratio:440/280;transform:translateX(0) rotate(7deg) scale(.92);transform-origin:88% 90%;pointer-events:none;filter:none}
+#gunSvg{display:block;width:100%;height:100%;overflow:visible}
+#flash{left:13%;bottom:48%;width:54px;height:54px}
+.receiver{position:absolute;right:30px;bottom:65px;width:245px;height:125px;border:3px solid #11151a;border-radius:24px 38px 18px 18px;background:linear-gradient(150deg,#5d6670 0%,#272d34 38%,#12161a 100%)}
+.receiver:after{content:"";position:absolute;right:35px;top:23px;width:95px;height:24px;border-radius:7px;background:#0e1216;border:2px solid #515b65}
+.barrel{position:absolute;left:52px;bottom:180px;width:230px;height:34px;border-radius:14px 5px 5px 14px;background:linear-gradient(#444d56,#15191d);border:3px solid #11151a;transform:rotate(-9deg)}
+.muzzle{position:absolute;left:35px;bottom:175px;width:47px;height:47px;border-radius:50%;background:#252b31;border:5px solid #0e1216;box-shadow:inset 0 0 0 7px #555e67}
+.stock{position:absolute;right:245px;bottom:85px;width:95px;height:78px;border-radius:20px 8px 8px 22px;background:#242a30;border:3px solid #11151a;transform:rotate(-7deg)}
+.mag{position:absolute;right:118px;bottom:8px;width:58px;height:130px;border-radius:9px 9px 20px 20px;background:linear-gradient(110deg,#3d444c,#11151a);border:3px solid #11151a;transform:rotate(9deg)}
+.grip{position:absolute;right:68px;bottom:-5px;width:67px;height:120px;border-radius:8px 9px 28px 25px;background:linear-gradient(110deg,#3c444c,#11151a);border:3px solid #11151a;transform:rotate(8deg)}
+.sight{position:absolute;right:145px;bottom:205px;width:65px;height:20px;border-radius:7px;background:#171b20;border:3px solid #0b0e11}
+#flash{position:absolute;left:8px;bottom:178px;width:65px;height:65px;background:#fff5a5;clip-path:polygon(50% 0,65% 34%,100% 50%,65% 66%,50% 100%,35% 66%,0 50%,35% 34%);opacity:0}
+#aimBtn{position:absolute;left:43px;bottom:180px;min-width:86px;width:86px;min-height:38px;padding:4px;border-radius:12px;background:#092033d9;border-color:#62c7ff;pointer-events:auto;font-size:12px}#aimBtn.active{background:#075b86;border-color:#a8e7ff;box-shadow:0 0 12px #35bfff88}
+#joystick{position:absolute;left:18px;bottom:30px;width:138px;height:138px;border-radius:50%;background:#ffffff12;border:1px solid #ffffff2e;box-shadow:inset 0 0 20px #0003;pointer-events:auto}
+#stick{position:absolute;left:44px;top:44px;width:50px;height:50px;border-radius:50%;background:#ffffff38;border:1px solid #ffffff38;box-shadow:0 4px 12px #0006}
+#buttons{position:absolute;right:18px;bottom:30px;display:flex;flex-direction:column;align-items:stretch;gap:8px;pointer-events:auto}
+#movementRow{display:flex;gap:7px;width:100%}
+#movementRow button{min-width:0;flex:1;width:50%;min-height:43px;font-size:12px}
+#crouch{background:#142331d9;border-color:#9ec5e8}
+#crouch.active{background:#176044;border-color:#6af0ad}
+#actionRow{display:flex;gap:10px;pointer-events:auto}
+button{min-width:82px;min-height:55px;border:1px solid #ffffff3b;border-radius:14px;background:#080e15dc;color:#fff;font-weight:900;font-size:14px;box-shadow:0 5px 15px #0007}
+#reload{min-width:94px}
+#startScreen{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;padding:22px;background:linear-gradient(145deg,#07111dee,#151e28ed);touch-action:manipulation}
+#startCard{position:relative;width:min(330px,100%);max-height:calc(100dvh - 18px);overflow-y:auto;padding:17px 16px 14px;border:1px solid #ffffff30;border-radius:22px;background:linear-gradient(145deg,#1b2732,#0c1219);box-shadow:0 18px 55px #0009;text-align:center}
+#startCard h1{font-size:24px;margin:0 0 5px;letter-spacing:1px}
+#startCard p{margin:0 0 10px;color:#c5d1da;line-height:1.35;font-size:12px}
+#difficulty{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:18px 0}
+.diffBtn{min-width:0;min-height:68px;padding:8px 4px;border-radius:12px;background:#111a23;border:1px solid #ffffff30;font-size:14px}
+.diffBtn small{display:block;margin-top:5px;font-size:11px;font-weight:500;color:#b9c6d0}
+.diffBtn.selected{border:2px solid #49d987;background:#143326;box-shadow:0 0 0 2px #49d98722}
+#startGame{width:100%;min-height:54px;background:linear-gradient(90deg,#16a765,#25d47d);border:0;color:#06140c;font-size:17px}
+#startHint{margin-top:13px;font-size:12px;color:#95a7b5}
+#settingsGrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:12px 0;text-align:right}
+.settingBox{padding:10px;border:1px solid #ffffff22;border-radius:11px;background:#101a23;font-size:12px;color:#d6e0e7}
+.settingBox label{display:block;margin-bottom:7px;font-weight:800}
+.settingBox input,.settingBox select{width:100%;min-height:40px;padding:7px;border-radius:8px;border:1px solid #ffffff35;background:#080e15;color:#fff;font-size:16px;font-weight:800}
+#modePick{min-height:43px}
+#teamHelp{font-size:11px;color:#9db1c0;margin:3px 0 8px;line-height:1.5}
+#mapPick,#modePick{width:100%;margin:5px 0;padding:10px;border-radius:10px;background:#111a23;color:#fff;border:1px solid #ffffff30;font-weight:700}
+#nameModal{position:fixed;inset:0;z-index:30;display:none;align-items:center;justify-content:center;padding:18px;background:#03070be8;touch-action:manipulation}
+#nameCard{width:min(330px,100%);padding:20px 16px;border:1px solid #ffffff35;border-radius:20px;background:linear-gradient(145deg,#1b2732,#0c1219);box-shadow:0 18px 55px #0009;text-align:center}
+#nameCard h2{margin:0 0 8px}#nameCard p{font-size:13px;color:#c5d1da;line-height:1.5;margin:0 0 12px}
+#playerNameInput{width:100%;box-sizing:border-box;min-height:48px;padding:10px;border-radius:10px;border:1px solid #ffffff40;background:#080e15;color:#fff;font-size:18px;font-weight:800;text-align:center}
+#savePlayerName{width:100%;margin-top:10px;min-height:48px;background:linear-gradient(90deg,#16a765,#25d47d);border:0;color:#06140c}
+#nameError{min-height:17px;color:#ff8790;font-size:12px;margin-top:5px}
+#settingsBtn{position:absolute;top:12px;right:12px;min-width:42px;width:42px;height:42px;min-height:42px;padding:0;border-radius:12px;font-size:21px;background:#111a23;border:1px solid #ffffff35;box-shadow:none}
+#settingsModal{position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;padding:16px;background:#03070bd9;touch-action:manipulation}
+#settingsCard{position:relative;width:min(330px,100%);max-height:calc(100dvh - 20px);overflow-y:auto;padding:14px 12px 12px;border:1px solid #ffffff35;border-radius:18px;background:linear-gradient(145deg,#1b2732,#0c1219);box-shadow:0 18px 55px #0009;text-align:center}
+#settingsCard h2{margin:2px 0 8px;font-size:21px}
+#settingsCard #settingsGrid{margin:8px 0;gap:7px}
+#settingsCard #difficulty{margin:8px 0;gap:6px}
+#settingsCard .settingBox{padding:7px}
+#settingsCard .settingBox label{margin-bottom:4px}
+#settingsCard .settingBox select{min-height:34px;padding:5px;font-size:14px}
+#settingsCard .diffBtn{min-height:55px;padding:5px 3px}
+#settingsCard #closeSettings{min-height:38px}
+#closeSettings{width:100%;min-height:44px;margin-top:8px;background:#173b2b;border-color:#43d987}
+#settingsCard #teamHelp{margin-top:8px}
+.weaponPick{min-width:0;flex:1;min-height:35px;padding:4px;font-size:10px;border-radius:9px;background:#111a23}
+.weaponPick.active{border-color:#49d987;background:#143326;color:#9cffc4}
+#missionLabel{position:absolute;left:14px;top:98px;padding:7px 10px;border-radius:10px;background:#07111dcc;border:1px solid #ffffff22;font-size:11px;font-weight:800}
+#gameOverScreen{position:fixed;inset:0;z-index:12;display:none;align-items:center;justify-content:center;padding:22px;background:#050a10d9;touch-action:manipulation}
+#gameOverCard{width:min(390px,100%);padding:25px;border:1px solid #ffffff35;border-radius:22px;background:linear-gradient(145deg,#202b36,#0c1219);text-align:center;box-shadow:0 18px 55px #0009}
+#gameOverCard h2{margin:0 0 10px;color:#ff6874}#gameOverCard p{color:#d0dae2;line-height:1.6}
+#goMenu,#goRestart{width:100%;margin-top:9px;min-height:50px}#goRestart{background:linear-gradient(90deg,#16a765,#25d47d);color:#06140c;border:0}
+
+#sprint{min-width:0;width:50%}
+@media(max-width:520px){#gun{right:24px;bottom:-28px;width:min(310px,62vw)}#flash{width:35px;height:35px}#status{width:min(330px,64vw)}#buttons{right:12px;bottom:22px}#movementRow button{min-height:39px;font-size:11px}}
+@media(pointer:fine){#joystick,#buttons{display:none}}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="hud">
+  <div id="info"><b>MINI FPS • V74</b><br>🕹️ حرکت و نگاه ۳۶۰°<br>🏃 SPRINT = سرعت بیشتر • 🦘 JUMP = جاخالی • 🧎 CROUCH = نشستن</div>
+  <div id="cross"></div><div id="teamScore" style="position:absolute;left:12px;top:12px;display:none;min-width:160px;padding:8px 10px;border-radius:12px;background:#07111de8;border:1px solid #ffffff30;font-size:12px;font-weight:900;line-height:1.8;box-shadow:0 4px 14px #0005"><div style="display:flex;justify-content:space-between;color:#7ecbff"><span>🔵 پلیس‌ها</span><b id="policeCount">۱</b></div><div style="display:flex;justify-content:space-between;color:#ff8585"><span>🔴 خلافکاران</span><b id="criminalCount">۶</b></div></div><div id="missionLabel" style="display:none">هدف: حذف ۱۰ آنمی</div>
+  <div id="coverToast" role="status">🛡️ پشت بتن پناه گرفتی</div><div id="killFeed" style="position:absolute;left:12px;bottom:228px;transform:none;width:min(210px,42vw);text-align:left;display:flex;flex-direction:column;gap:3px;pointer-events:none;font:900 10px Arial;text-shadow:0 1px 3px #000;z-index:4"></div>
+  <div id="topHud"><div class="pill" id="roundLabel">راند ۱</div><div class="pill" id="coinLabel">$ ۰</div><button id="shopBtn" type="button">🛒 شاپ</button></div>
+  <div id="gun" aria-hidden="true">
+    <svg id="gunSvg" viewBox="0 0 440 280" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="rifleMetal" x1="0" y1="0" x2="0.9" y2="1"><stop stop-color="#687783"/><stop offset=".35" stop-color="#303d47"/><stop offset=".72" stop-color="#171e25"/><stop offset="1" stop-color="#090d12"/></linearGradient>
+        <linearGradient id="rifleTop" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#8997a1"/><stop offset=".4" stop-color="#384650"/><stop offset="1" stop-color="#11171c"/></linearGradient>
+        <linearGradient id="rifleHand" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d6a47b"/><stop offset="1" stop-color="#82553c"/></linearGradient>
+      </defs>
+      <g id="weaponAkArt">
+      <!-- stock and receiver -->
+      <path d="M235 143 L319 153 L360 196 L346 226 L285 212 L248 184 Z" fill="#111820" stroke="#070a0d" stroke-width="5"/>
+      <path d="M247 148 L313 160 L341 192 L326 207 L281 196 L250 176 Z" fill="url(#rifleMetal)" stroke="#46535d" stroke-width="2"/>
+      <!-- long handguard/barrel -->
+      <path d="M45 111 L246 111 L273 132 L264 161 L61 157 L40 142 Z" fill="url(#rifleTop)" stroke="#0a0e12" stroke-width="5"/>
+      <path d="M28 120 L111 120 L111 145 L28 145 Z" fill="#171f26" stroke="#06090c" stroke-width="4"/>
+      <path d="M8 124 L42 124 L42 141 L8 141 Z" fill="#0a0e12" stroke="#65727b" stroke-width="3"/>
+      <path d="M65 119 L232 119" stroke="#9eabb4" stroke-width="3" opacity=".55"/>
+      <!-- handguard vents -->
+      <g fill="#0c1116" stroke="#596771" stroke-width="1.5">
+        <rect x="92" y="128" width="12" height="13" rx="3"/><rect x="113" y="128" width="12" height="13" rx="3"/><rect x="134" y="128" width="12" height="13" rx="3"/><rect x="155" y="128" width="12" height="13" rx="3"/><rect x="176" y="128" width="12" height="13" rx="3"/><rect x="197" y="128" width="12" height="13" rx="3"/>
+      </g>
+      <!-- rail and optic -->
+      <path d="M89 103 L254 103 L261 112 L86 112 Z" fill="#080c10" stroke="#4a5660" stroke-width="2"/>
+      <path d="M143 104 L148 91 L188 91 L194 104 Z" fill="#202a32" stroke="#070b0f" stroke-width="4"/>
+      <path d="M151 92 L151 69 Q151 63 158 63 L181 63 Q188 63 188 70 L188 92 Z" fill="#111820" stroke="#596773" stroke-width="4"/>
+      <ellipse cx="169.5" cy="70" rx="12.5" ry="5.2" fill="#9be7ff" opacity=".9" stroke="#c5f5ff" stroke-width="1.5"/>
+      <path d="M169.5 66 L169.5 74 M165.5 70 L173.5 70" stroke="#ff5c54" stroke-width="1.5"/>
+      <path d="M157 80 L182 80" stroke="#71818c" stroke-width="2"/>
+      <!-- receiver and controls -->
+      <path d="M226 126 L291 134 L319 167 L301 203 L243 189 L218 159 Z" fill="url(#rifleMetal)" stroke="#070a0d" stroke-width="5"/>
+      <path d="M239 139 L281 145 L296 163 L258 158 Z" fill="#5b6973" opacity=".75"/>
+      <path d="M247 164 L284 171 L279 181 L242 174 Z" fill="#0b1015" stroke="#63717b" stroke-width="2"/>
+      <circle cx="300" cy="154" r="5" fill="#d8a33a" stroke="#11171c" stroke-width="2"/>
+      <!-- trigger and grip -->
+      <path d="M246 184 L273 190 L266 226 L238 222 L230 203 Z" fill="#10171d" stroke="#05080b" stroke-width="4"/>
+      <path d="M239 196 Q254 196 257 207 L252 214 L243 211 Z" fill="none" stroke="#8d9aa3" stroke-width="3"/>
+      <!-- magazine -->
+      <path d="M202 179 L235 185 L226 248 Q221 260 207 253 L188 241 Z" fill="url(#rifleMetal)" stroke="#070a0d" stroke-width="5"/>
+      <path d="M202 195 L227 200 L222 240 L200 235 Z" fill="#202b34" stroke="#56636d" stroke-width="2"/>
+      <path d="M201 207 L224 212 M199 218 L222 223 M197 229 L220 234" stroke="#87939b" stroke-width="2" opacity=".6"/>
+      <!-- Sleeves/forearms in layered perspective: darker side planes and lit top edges create a chunky 3D look. -->
+      <path d="M54 207 L103 158 L132 164 L118 199 L83 239 L40 260 Z" fill="#243746" stroke="#0c151d" stroke-width="5"/>
+      <path d="M54 207 L103 158 L119 163 L101 196 L66 235 Z" fill="#496577"/>
+      <path d="M281 230 L311 194 L348 206 L389 252 L371 280 L319 252 Z" fill="#243746" stroke="#0c151d" stroke-width="5"/>
+      <path d="M311 199 L343 211 L377 252 L364 261 L327 235 Z" fill="#496577"/>
+      <!-- hands gripping weapon -->
+      <path d="M117 151 Q132 143 147 151 L166 164 L159 181 L138 177 L119 168 Z" fill="url(#rifleHand)" stroke="#30221a" stroke-width="3"/>
+      <path d="M270 204 Q291 197 306 210 L318 226 L305 243 L281 230 L263 219 Z" fill="url(#rifleHand)" stroke="#30221a" stroke-width="3"/>
+      <path d="M119 157 L145 168 M276 211 L299 226" stroke="#f0c39a" stroke-width="3" opacity=".55"/>
+      <path d="M73 158 L230 162" stroke="#8d9aa3" stroke-width="2" opacity=".45"/>
+      </g>
+      <g id="weaponPistolArt" style="display:none">
+        <defs><linearGradient id="pistolMetal" x1="0" y1="0" x2="0.8" y2="1"><stop stop-color="#9eabb4"/><stop offset=".38" stop-color="#3e4b56"/><stop offset="1" stop-color="#10161c"/></linearGradient><linearGradient id="pistolHand" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#e4b58d"/><stop offset="1" stop-color="#80523a"/></linearGradient></defs>
+        <path d="M190 155 L340 168 L359 188 L344 211 L219 198 L178 178 Z" fill="#0b1016" stroke="#05080b" stroke-width="5"/>
+        <path d="M177 143 L326 154 L345 176 L330 195 L191 184 L165 164 Z" fill="url(#pistolMetal)" stroke="#0a0e12" stroke-width="4"/>
+        <path d="M185 145 L315 155 L329 168 L191 159 Z" fill="#a4b0b8" opacity=".7"/>
+        <path d="M170 160 L326 174 L321 184 L181 173 Z" fill="#202a32"/>
+        <path d="M206 135 L245 139 L248 151 L204 147 Z" fill="#111820" stroke="#64727c" stroke-width="2"/>
+        <path d="M209 137 L242 140" stroke="#aab7c0" stroke-width="2"/>
+        <path d="M246 186 L281 190 L271 248 Q267 262 253 257 L224 238 Z" fill="#17212a" stroke="#05080b" stroke-width="5"/>
+        <path d="M244 198 L270 202 L262 245 L237 232 Z" fill="#34424d" stroke="#71808a" stroke-width="2"/>
+        <path d="M242 211 L267 217 M239 222 L265 228" stroke="#111820" stroke-width="3"/>
+        <path d="M244 185 Q260 182 270 194 L267 207 L248 204 Z" fill="none" stroke="#a9b5bd" stroke-width="3"/>
+        <path d="M150 214 L199 168 L229 176 L207 216 L171 255 L125 275 Z" fill="#243746" stroke="#0c151d" stroke-width="5"/><path d="M150 214 L199 168 L215 174 L194 210 L159 249 Z" fill="#496577"/>
+        <path d="M292 223 L318 188 L353 201 L390 249 L372 280 L326 251 Z" fill="#243746" stroke="#0c151d" stroke-width="5"/><path d="M318 193 L347 205 L378 250 L365 260 L332 234 Z" fill="#496577"/>
+        <path d="M196 165 Q213 155 228 167 L241 180 L232 195 L211 188 L193 178 Z" fill="url(#pistolHand)" stroke="#30221a" stroke-width="3"/>
+        <path d="M260 197 Q280 190 294 204 L304 220 L291 236 L269 222 L253 211 Z" fill="url(#pistolHand)" stroke="#30221a" stroke-width="3"/>
+      </g>
+      <g id="weaponSniperArt" style="display:none">
+        <path d="M30 112 L285 112 L308 126 L300 151 L38 151 Z" fill="url(#rifleMetal)" stroke="#080c10" stroke-width="5"/>
+        <path d="M12 122 L35 122 L35 142 L12 142 Z" fill="#111820" stroke="#71808b" stroke-width="3"/>
+        <path d="M92 104 L315 104 L321 112 L90 112 Z" fill="#090e13" stroke="#6d7b86" stroke-width="2"/>
+        <path d="M135 89 L201 89 L210 105 L126 105 Z" fill="#1b2731" stroke="#8497a5" stroke-width="3"/>
+        <rect x="145" y="70" width="49" height="23" rx="8" fill="#10171e" stroke="#8497a5" stroke-width="4"/><circle cx="169" cy="81" r="8" fill="#4c9bbd" stroke="#b5e8ff" stroke-width="3"/>
+        <path d="M220 150 L250 150 L263 219 L236 233 L217 190 Z" fill="#202b34" stroke="#080c10" stroke-width="4"/>
+        <path d="M275 125 L345 125 L365 140 L358 151 L275 151 Z" fill="#111820" stroke="#63727e" stroke-width="3"/>
+        <path d="M325 126 L421 126 L430 137 L421 148 L325 148 Z" fill="url(#rifleTop)" stroke="#080c10" stroke-width="4"/>
+        <path d="M430 127 L439 127 L439 147 L430 147 Z" fill="#0b1015" stroke="#74818a" stroke-width="2"/>
+        <path d="M256 154 L290 158 L301 211 L281 228 L252 195 Z" fill="#151b21" stroke="#65747e" stroke-width="3"/>
+      </g>
+      <g id="weaponLmgArt" style="display:none">
+        <defs><linearGradient id="lmgMetal" x1="0" y1="0" x2="0.9" y2="1"><stop stop-color="#8b9a91"/><stop offset=".4" stop-color="#37483f"/><stop offset="1" stop-color="#0c1512"/></linearGradient></defs>
+        <path d="M220 145 L317 154 L364 195 L345 226 L275 211 L236 183 Z" fill="#111914" stroke="#050906" stroke-width="5"/>
+        <path d="M42 110 L250 110 L274 131 L265 164 L54 158 L34 141 Z" fill="url(#lmgMetal)" stroke="#080d0a" stroke-width="5"/>
+        <path d="M5 121 L62 121 L62 145 L5 145 Z" fill="#101713" stroke="#67756b" stroke-width="3"/><path d="M12 124 L12 142 M20 124 L20 142 M28 124 L28 142" stroke="#8e9b91" stroke-width="2"/>
+        <path d="M66 118 L235 120 L231 151 L65 149 Z" fill="#29372f" stroke="#101713" stroke-width="3"/>
+        <g fill="#0d130f" stroke="#708075" stroke-width="1.5"><rect x="83" y="126" width="14" height="15" rx="2"/><rect x="106" y="126" width="14" height="15" rx="2"/><rect x="129" y="126" width="14" height="15" rx="2"/><rect x="152" y="126" width="14" height="15" rx="2"/><rect x="175" y="126" width="14" height="15" rx="2"/><rect x="198" y="126" width="14" height="15" rx="2"/></g>
+        <path d="M80 102 L259 103 L265 113 L78 112 Z" fill="#090e0b" stroke="#65736a" stroke-width="2"/><path d="M140 104 L146 91 L190 91 L195 104 Z" fill="#1d2821" stroke="#080d0a" stroke-width="4"/>
+        <path d="M229 126 L295 135 L320 166 L302 203 L242 189 L217 159 Z" fill="url(#lmgMetal)" stroke="#050906" stroke-width="5"/><path d="M241 139 L281 145 L296 163 L258 158 Z" fill="#829087" opacity=".6"/>
+        <path d="M244 184 L273 190 L266 226 L238 222 L230 203 Z" fill="#101713" stroke="#050906" stroke-width="4"/>
+        <path d="M205 179 L235 185 L226 245 Q220 258 207 252 L188 239 Z" fill="#29372f" stroke="#050906" stroke-width="5"/>
+        <path d="M279 173 L301 177 L302 227 L283 229 Z" fill="#151d18" stroke="#718075" stroke-width="3"/><path d="M282 183 L299 186 M282 194 L299 197 M282 205 L299 208 M283 216 L300 219" stroke="#8e9b91" stroke-width="2"/>
+        <path d="M54 207 L103 158 L132 164 L118 199 L83 239 L40 260 Z" fill="#243746" stroke="#0c151d" stroke-width="5"/><path d="M54 207 L103 158 L119 163 L101 196 L66 235 Z" fill="#496577"/>
+        <path d="M281 230 L311 194 L348 206 L389 252 L371 280 L319 252 Z" fill="#243746" stroke="#0c151d" stroke-width="5"/><path d="M311 199 L343 211 L377 252 L364 261 L327 235 Z" fill="#496577"/>
+        <path d="M117 151 Q132 143 147 151 L166 164 L159 181 L138 177 L119 168 Z" fill="url(#rifleHand)" stroke="#30221a" stroke-width="3"/><path d="M270 204 Q291 197 306 210 L318 226 L305 243 L281 230 L263 219 Z" fill="url(#rifleHand)" stroke="#30221a" stroke-width="3"/>
+      </g>
+      <g id="weaponKnifeArt" style="display:none"><defs><linearGradient id="knifeSteel" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#f4fbff"/><stop offset=".35" stop-color="#8fa5b4"/><stop offset="1" stop-color="#273540"/></linearGradient></defs><path d="M150 210 L224 158 L337 101 L305 143 L225 190 L202 230 Z" fill="url(#knifeSteel)" stroke="#111820" stroke-width="5"/><path d="M149 210 L190 207 L211 228 L190 252 L145 231 Z" fill="#18232d" stroke="#080d12" stroke-width="5"/><path d="M157 216 L188 225 M153 225 L182 236" stroke="#91a5b3" stroke-width="3"/><path d="M205 191 L226 211 L216 227 L197 207 Z" fill="#d3a17a" stroke="#30221a" stroke-width="3"/><path d="M260 157 L309 128" stroke="#fff" stroke-width="3" opacity=".8"/></g>
+    </svg>
+    <div id="flash"></div>
+  </div>
+  <div id="status">
+    <div class="meter"><span class="meterLabel">استامینا <b id="staminaPercent">۱۰۰٪</b></span><div id="staminabox"><div id="staminabar"></div></div></div>
+    <div class="meter"><span class="meterLabel">سلامتی <b id="hpPercent">۱۰۰٪</b></span><div id="hpbox"><div id="hpbar"></div></div></div>
+    <div id="weaponName" style="font-size:12px;font-weight:900;text-shadow:0 2px 4px #000">PISTOL</div><div id="ammo">12 / 72</div>
+  </div>
+  <button id="aimBtn" type="button" aria-pressed="false">🎯 AIM</button><div id="joystick"><div id="stick"></div></div>
+  <div id="buttons"><div id="movementRow"><button id="sprint">SPRINT</button><button id="crouch" aria-pressed="false">CROUCH</button></div><div id="weaponRow" style="display:flex;gap:5px"><button class="weaponPick" data-weapon="knife" type="button" style="flex:1;display:none">KNIFE</button><button class="weaponPick active" data-weapon="pistol" type="button" style="flex:1">PISTOL</button><button class="weaponPick" data-weapon="ak" type="button" style="flex:1;display:none">AK-47</button><button class="weaponPick" data-weapon="sniper" type="button" style="flex:1;display:none">SNIPE</button><button class="weaponPick" data-weapon="lmg" type="button" style="flex:1;display:none">تیربار</button></div><div id="actionRow"><button id="reviveBtn" type="button" style="display:none;background:#145a43;border-color:#53e6a4">REVIVE · 5s</button><button id="reload">RELOAD</button><button id="jump">JUMP</button><button id="fire">FIRE</button></div></div>
+</div>
+<div id="shopScreen"><div id="shopCard"><h2>🛒 شاپ</h2><p id="shopStatus">سلاح‌ها و تجهیزات را با دلار بازی بخر.</p><div id="shopActions"><button class="shopAction" id="buyKnife" style="background:#332b20;border-color:#d6c19b">خرید نایف — ۵۰۰ دلار</button><button class="shopAction" id="buyAK">خرید AK-47 — ۲۵۰۰ دلار</button><button class="shopAction" id="buySniper" style="background:#172d43;border-color:#74caff">خرید اسنایپر — ۳۵۰۰ دلار</button><button class="shopAction" id="buyLMG" style="background:#26351d;border-color:#a4d65e">خرید تیربار — ۵۰۰۰ دلار</button><button class="shopAction" id="buyAmmo">خشاب کامل + ذخیره — ۵۰۰ دلار</button><button class="shopAction" id="buyMag" style="background:#172b3d;border-color:#4ea8ff">خشاب +۳۰ تیر — ۲۵۰ دلار</button><button class="shopAction" id="buyHealth50" style="background:#382a17;border-color:#f3b943">سلامتی +۵۰ — ۱۰۰۰ دلار ❤️</button><button class="shopAction" id="buyHealthFull" style="background:#3a1720;border-color:#ff6678">سلامتی کامل — ۲۰۰۰ دلار ❤️</button></div><button id="closeShop">ادامهٔ بازی</button></div></div>
+<div id="roundScreen"><div id="roundCard"><h2 id="roundTitle">راند تمام شد!</h2><p id="roundText">راند بعدی تا ۵ ثانیهٔ دیگر شروع می‌شود.</p><button id="continueRound">آماده‌ام</button></div></div>
+<div id="startScreen">
+  <div id="startCard">
+    <button id="settingsBtn" type="button" aria-label="تنظیمات" title="تنظیمات">⚙️</button>
+    <h1>MINI FPS</h1>
+    <p>V76 • نام بازیکن و کیل‌فید شخصی‌سازی‌شده</p>
+    <label for="modePick" style="display:block;text-align:right;font-size:13px;font-weight:900;margin-bottom:4px">🎮 حالت بازی</label>
+    <select id="modePick" aria-label="انتخاب حالت بازی"><option value="solo">تک‌نفره — تا باس‌فایت</option><option value="team">تیمی — مبارزه زمان‌دار</option></select>
+    <button id="startGame" type="button">شروع بازی</button>
+  </div>
+  <div id="nameModal" role="dialog" aria-modal="true" aria-labelledby="nameTitle"><div id="nameCard"><h2 id="nameTitle">👤 خوش اومدی!</h2><p>برای اولین ورود، یک نام برای بازیکنت انتخاب کن. این نام در مرورگر ذخیره می‌شه و در پیام‌های کیل نمایش داده می‌شه.</p><form id="nameForm"><input id="playerNameInput" type="text" maxlength="16" autocomplete="nickname" placeholder="مثلاً Mani" aria-label="نام بازیکن"><div id="nameError" role="status"></div><button id="savePlayerName" type="submit">ذخیره و ادامه</button></form></div></div>
+  <div id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div id="settingsCard">
+      <h2 id="settingsTitle">⚙️ تنظیمات بازی</h2>
+      <div class="settingBox" style="text-align:right;margin:8px 0"><label for="settingsPlayerName">👤 نام بازیکن</label><input id="settingsPlayerName" type="text" maxlength="16" autocomplete="nickname" placeholder="نام خودت را وارد کن"></div>
+      <div id="settingsGrid">
+        <div class="settingBox"><label for="enemyCount">👾 تعداد انمی‌ها</label><select id="enemyCount"><option value="1">۱ انمی</option><option value="2">۲ انمی</option><option value="3">۳ انمی</option><option value="4">۴ انمی</option><option value="5">۵ انمی</option><option value="6" selected>۶ انمی</option></select></div>
+        <div class="settingBox"><label for="allyCount">🟦 تعداد یارها</label><select id="allyCount"><option value="0">بدون یار</option><option value="1">۱ یار</option><option value="2">۲ یار</option><option value="3" selected>۳ یار</option><option value="4">۴ یار</option><option value="5">۵ یار</option><option value="6">۶ یار</option></select></div>
+        <div class="settingBox" id="timeSetting" style="grid-column:1/-1"><label for="teamDuration">⏱️ مدت حالت تیمی</label><select id="teamDuration"><option value="60">۱ دقیقه</option><option value="120" selected>۲ دقیقه</option><option value="180">۳ دقیقه</option><option value="240">۴ دقیقه</option><option value="300">۵ دقیقه</option></select></div>
+      </div>
+      <div id="teamHelp">تعداد انمی و یار را انتخاب کن؛ هر دو حداکثر ۶ نفر.</div>
+      <div id="difficulty" role="group" aria-label="انتخاب سختی">
+        <button class="diffBtn" data-level="easy" type="button">آسان<small>انمی ضعیف‌تر</small></button>
+        <button class="diffBtn selected" data-level="normal" type="button">عادی<small>تعادل استاندارد</small></button>
+        <button class="diffBtn" data-level="hard" type="button">سخت<small>انمی قوی‌تر</small></button>
+      </div>
+      <button id="closeSettings" type="button">ذخیره و برگشت</button>
+    </div>
+  </div>
+</div>
+<div id="gameOverScreen"><div id="gameOverCard"><h2>💀 بازی تمام شد!</h2><p>سلامتی‌ات به صفر رسید. می‌تونی از منوی اول دوباره شروع کنی.</p><button id="goRestart" type="button">شروع مجدد</button></div></div>
+<script>
+const c=document.getElementById('c'),ctx=c.getContext('2d');
+let playerName='';try{playerName=(localStorage.getItem('miniFpsPlayerName')||'').trim().slice(0,16)}catch(_){}
+function setPlayerName(value){const cleaned=String(value||'').trim().replace(/[<>]/g,'').slice(0,16);if(!cleaned)return false;playerName=cleaned;try{localStorage.setItem('miniFpsPlayerName',playerName)}catch(_){}return true}
+function refreshPlayerNameFields(){const a=document.getElementById('settingsPlayerName');if(a)a.value=playerName;}
+
+let W=0,H=0,D=1,F=0,HALF_W=0,HALF_H=0;
+let lookDX=0,lookDY=0;
+let aimEnabled=false;function resize(){D=Math.min(devicePixelRatio||1,1);W=innerWidth;H=innerHeight;HALF_W=W/2;HALF_H=H/2;F=Math.min(W,H)*.9*(aimEnabled?1.28:1);c.width=Math.round(W*D);c.height=Math.round(H*D);c.style.width=W+'px';c.style.height=H+'px';ctx.setTransform(D,0,0,D,0,0);ctx.imageSmoothingEnabled=true}
+resize();addEventListener('resize',resize);
+const aimBtn=document.getElementById('aimBtn');aimBtn.addEventListener('click',()=>{aimEnabled=!aimEnabled;aimBtn.classList.toggle('active',aimEnabled);aimBtn.setAttribute('aria-pressed',String(aimEnabled));aimBtn.textContent=aimEnabled?'🎯 AIM ON':'🎯 AIM';F=Math.min(W,H)*.9*(aimEnabled?1.28:1);});
+
+const keys={};addEventListener('keydown',e=>{keys[e.code]=true;if(e.code==='KeyR')reload();if(e.code==='Space')jump();if(e.code==='KeyF'){firing=true;fire()}});addEventListener('keyup',e=>{keys[e.code]=false;if(e.code==='KeyF')firing=false});addEventListener('keyup',e=>keys[e.code]=false);
+
+const player={x:0,z:20,y:1.65,vy:0,yaw:0,pitch:0};
+const weapon={mag:30,reserve:180,magSize:30,damage:22,bulletSpeed:54,reloadTime:1.05,fireRate:95,auto:true,cool:0,reload:0,recoil:0,flash:0};
+let hp=100,score=0;let reviveProgress=0,reviveTarget=null;const REVIVE_SECONDS=5,DOWN_SECONDS=20;let playerDowned=false,playerDownTimer=0,playerReviveProgress=0;
+let selectedMap='warehouse',gameMode='solo',missionKills=0;
+let configuredEnemyCount=6,configuredAllyCount=3,teamDuration=120,teamTimeLeft=120,teamRespawnCooldown=0;
+const weaponSpecs={knife:{name:'KNIFE',magSize:1,reserve:0,damage:50,fireRate:520,reloadTime:0,speed:0,color:'#dceeff'},pistol:{name:'PISTOL',magSize:12,reserve:72,damage:18,fireRate:270,reloadTime:.85,speed:48,color:'#ffd28a'},ak:{name:'AK-47',magSize:30,reserve:180,damage:30,fireRate:115,reloadTime:1.05,speed:56,color:'#fff0a0'},lmg:{name:'LIGHT MACHINE GUN',magSize:60,reserve:240,damage:25,fireRate:78,reloadTime:1.8,speed:58,color:'#b9ff9b'},sniper:{name:'SNIPER',magSize:8,reserve:48,damage:27,fireRate:620,reloadTime:1.45,speed:82,color:'#b7e8ff'}};
+const weaponStates={knife:{mag:1,reserve:0},pistol:{mag:12,reserve:72},ak:{mag:30,reserve:180},lmg:{mag:60,reserve:240},sniper:{mag:8,reserve:48}};
+let ownedWeapons=new Set(['pistol']);
+let currentWeaponId='pistol';
+let gameStarted=false,difficulty='normal';
+const difficultySettings={easy:{enemyHealth:115,enemyDamage:0.42,enemyMinFire:4.0,enemyFireRange:1.5},normal:{enemyHealth:155,enemyDamage:0.68,enemyMinFire:3.15,enemyFireRange:1.35},hard:{enemyHealth:215,enemyDamage:0.95,enemyMinFire:2.15,enemyFireRange:1.05}};
+let stamina=100;
+let sprintHeld=false;
+let crouchHeld=false;
+let moveVX=0,moveVZ=0;
+let climbingTower=null;
+const enemies=[];
+const allies=[];
+let round=1,coins=0,intermission=0,roundTransition=false,bossAlive=false,gameWon=false;let teamRoundsSurvived=0;try{teamRoundsSurvived=Number(localStorage.getItem('miniFpsTeamRounds')||0)||0}catch(_){teamRoundsSurvived=0}
+let nextEnemyId=1;
+const combatEffects=[];
+const MAX_COMBAT_EFFECTS=10;
+const enemyBullets=[];
+const playerBullets=[];
+let playerHitFlash=0;
+const initialEnemyHealth=new Map();
+const difficultyButtons=[...document.querySelectorAll('.diffBtn')];
+difficultyButtons.forEach(btn=>btn.addEventListener('click',()=>{
+ difficulty=btn.dataset.level;
+ difficultyButtons.forEach(b=>b.classList.toggle('selected',b===btn));
+}));
+function syncWeaponStats(){
+ const spec=weaponSpecs[currentWeaponId];weapon.magSize=spec.magSize;weapon.damage=spec.damage;weapon.fireRate=spec.fireRate;weapon.reloadTime=spec.reloadTime;weapon.bulletSpeed=spec.speed;
+ document.getElementById('weaponName').textContent=spec.name;
+ document.querySelectorAll('.weaponPick').forEach(b=>{b.classList.toggle('active',b.dataset.weapon===currentWeaponId);b.style.display=ownedWeapons.has(b.dataset.weapon)?'block':'none';});
+ document.getElementById('weaponKnifeArt').style.display=currentWeaponId==='knife'?'':'none';document.getElementById('weaponPistolArt').style.display=currentWeaponId==='pistol'?'':'none';document.getElementById('weaponAkArt').style.display=currentWeaponId==='ak'?'':'none';document.getElementById('weaponLmgArt').style.display=currentWeaponId==='lmg'?'':'none';document.getElementById('weaponSniperArt').style.display=currentWeaponId==='sniper'?'':'none';
+ updateAmmoHud(true);
+}
+function updateAmmoHud(force=false){const el=document.getElementById('ammo');const txt=`${weapon.reload>0?'RELOADING':weapon.mag+' / '+weapon.reserve}`;if(force||el.textContent!==txt)el.textContent=txt;}
+function switchWeapon(id){if(!weaponSpecs[id]||!ownedWeapons.has(id)||id===currentWeaponId)return;weaponStates[currentWeaponId]={mag:weapon.mag,reserve:weapon.reserve};currentWeaponId=id;const st=weaponStates[id];weapon.mag=st.mag;weapon.reserve=st.reserve;weapon.reload=0;weapon.cool=0;syncWeaponStats();sfx('reload');}
+document.querySelectorAll('.weaponPick').forEach(b=>b.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();switchWeapon(b.dataset.weapon)}));
+addEventListener('keydown',e=>{if(e.code==='Digit1')switchWeapon('pistol');if(e.code==='Digit2')switchWeapon('ak');if(e.code==='Digit3')switchWeapon('sniper');if(e.code==='Digit4')switchWeapon('lmg');});
+function applyMap(){
+ const originals=walls.map(o=>({o,x:o.baseX??o.x,z:o.baseZ??o.z,c:o.baseC??o.c,w:o.baseW??o.w,d:o.baseD??o.d}));
+ for(const q of originals){q.o.baseX=q.x;q.o.baseZ=q.z;q.o.baseC=q.c;q.o.baseW=q.w;q.o.baseD=q.d; q.o.x=q.x;q.o.z=q.z;q.o.c=q.c;q.o.w=q.w;q.o.d=q.d;q.o.destroyed=false;q.o.hp=q.o.barrel?3:undefined;}
+ const movable=walls.filter(o=>o.container||o.barrier||o.barrel);
+ if(selectedMap==='desert'){
+  const spots=[[-18,-16],[12,-19],[0,7],[23,18],[-26,23],[-3,-26],[29,-1],[-20,2],[7,29],[-32,-7],[31,-25],[4,-33],[32,29],[-31,31]];
+  movable.forEach((o,i)=>{if(spots[i]){o.x=spots[i][0];o.z=spots[i][1];} if(o.container)o.c=['#c4a36b','#b98a50','#d1bd8a','#96764f','#bfa16d'][i%5];});
+ }else if(selectedMap==='city'){
+  const spots=[[-19,-7],[17,-17],[-5,17],[23,7],[-24,27],[-7,-23],[27,-10],[-18,6],[8,27],[-32,-4],[32,-24],[3,-33],[30,28],[-32,31]];
+  movable.forEach((o,i)=>{if(spots[i]){o.x=spots[i][0];o.z=spots[i][1];} if(o.container)o.c=['#66727a','#7e8588','#566a7d','#8c7770','#63676e'][i%5];});
+ }
+ wallOrder.length=0;lastOrderYaw=999;
+}
+function spawnRound(n,keepExisting=false,forcedCount=null,forceNoBoss=false){
+ const cfg=difficultySettings[difficulty];
+ if(!keepExisting)enemies.length=0;bossAlive=forceNoBoss?false:(n%10===0);
+ const count=forcedCount!==null?Math.min(6,Math.max(1,forcedCount)):(bossAlive?1:Math.min(configuredEnemyCount,6));
+ for(let i=0;i<count;i++){
+  const boss=bossAlive;let ex=0,ez=0,placed=false;
+  // Scatter enemies through the whole arena instead of forming a tight pack around the player.
+  for(let tries=0;tries<90&&!placed;tries++){
+   if(boss){const a=Math.random()*Math.PI*2,r=17+Math.random()*7;ex=player.x+Math.sin(a)*r;ez=player.z-Math.cos(a)*r;}
+   else {ex=-35+Math.random()*70;ez=-35+Math.random()*70;}
+   ex=Math.max(-39,Math.min(39,ex));ez=Math.max(-39,Math.min(39,ez));
+   if(Math.hypot(ex-player.x,ez-player.z)<(boss?12:10))continue;
+   if(collides(ex,ez))continue;
+   if(enemies.some(o=>Math.hypot(ex-o.x,ez-o.z)<5.2))continue;
+   placed=true;
+  }
+  if(!placed){
+   // Deterministic fallback also avoids placing enemies inside a container/barrier.
+   for(let tries=0;tries<120&&!placed;tries++){
+    const a=(Math.PI*2*(i+tries*.37)/Math.max(1,count));
+    const r=15+(tries%8)*2.4;
+    ex=Math.max(-39,Math.min(39,player.x+Math.sin(a)*r));
+    ez=Math.max(-39,Math.min(39,player.z-Math.cos(a)*r));
+    if(!collides(ex,ez)&&Math.hypot(ex-player.x,ez-player.z)>9&&!enemies.some(o=>Math.hypot(ex-o.x,ez-o.z)<3.2))placed=true;
+   }
+   // Last-resort safe arena edge location.
+   if(!placed){ex=38;ez=38;if(collides(ex,ez)){ex=38;ez=-38;}}
+  }
+  const role=boss?'assault':(i%5<3?'assault':'ranged');
+  const magSize=boss?24:(role==='ranged'?12+Math.floor(Math.random()*5):15+Math.floor(Math.random()*5));
+  const e={id:nextEnemyId++,x:ex,z:ez,hp:boss?cfg.enemyHealth*8:cfg.enemyHealth,color:boss?'#b14cff':(gameMode==='team'?'#f02f3d':['#45c878','#e05b67','#d7a43f','#5d86e8','#d36bc5'][Math.floor(Math.random()*5)]),gun:'#252a30',cool:.45+Math.random()*1.4,boss,role,dead:false,spawnFx:.45,muzzleFx:0,preferredDist:role==='ranged'?16+Math.random()*7:4.5+Math.random()*3,burstRemaining:0,burstTimer:0,magAmmo:magSize,magSize,reloadTimer:0,reloading:false,strafeSign:Math.random()<.5?-1:1,strafePhase:Math.random()*Math.PI*2,facingYaw:Math.atan2(player.x-ex,player.z-ez),visAlpha:1};
+  enemies.push(e);initialEnemyHealth.set(e,e.hp);enemyVisible.set(e,true);
+ }
+ if(!keepExisting){document.getElementById('roundLabel').textContent=(bossAlive?'👑 باس راند ':'راند ')+n;
+ document.getElementById('roundText').textContent=bossAlive?'باس‌فایت! یک باس قدرتمند وارد میدان شده.':'دشمن‌ها را از بین ببر تا راند بعدی شروع شود.';}
+}
+function updateCoins(){document.getElementById('coinLabel').textContent='$ '+coins;}
+
+function formatTeamTime(seconds){const s=Math.max(0,Math.ceil(seconds));return '⏱️ '+Math.floor(s/60)+':'+String(s%60).padStart(2,'0');}
+function updateModeSettings(){const team=document.getElementById('modePick').value==='team';document.getElementById('timeSetting').style.display=team?'block':'none';document.getElementById('allyCount').disabled=!team;document.getElementById('teamHelp').textContent=team?'تیمی: یارها کنار تو می‌جنگند؛ آنمی‌ها به یارها هم حمله می‌کنند. با حذف همهٔ آنمی‌ها، پلیس‌ها برندهٔ راند می‌شوند.':'تک‌نفره: بدون یار، تعداد آنمی‌ها قابل تنظیم است و در راند ۱۰ باس ظاهر می‌شود.';}
+document.getElementById('modePick').addEventListener('change',updateModeSettings);updateModeSettings();
+document.getElementById('settingsBtn').addEventListener('click',()=>{updateModeSettings();refreshPlayerNameFields();document.getElementById('settingsModal').style.display='flex';});
+document.getElementById('closeSettings').addEventListener('click',()=>{const field=document.getElementById('settingsPlayerName');if(field&&field.value.trim())setPlayerName(field.value);refreshPlayerNameFields();document.getElementById('settingsModal').style.display='none';});
+document.getElementById('settingsPlayerName').addEventListener('change',e=>{if(e.target.value.trim())setPlayerName(e.target.value)});
+document.getElementById('nameForm').addEventListener('submit',e=>{e.preventDefault();if(!setPlayerName(document.getElementById('playerNameInput').value)){document.getElementById('nameError').textContent='لطفاً یک نام وارد کن.';return;}document.getElementById('nameError').textContent='';document.getElementById('nameModal').style.display='none';});
+if(!playerName){document.getElementById('nameModal').style.display='flex';}else{document.getElementById('nameModal').style.display='none';}
+document.getElementById('settingsModal').addEventListener('click',e=>{if(e.target.id==='settingsModal')e.currentTarget.style.display='none';});
+function spawnAllies(count){allies.length=0;for(let i=0;i<count;i++){let x=0,z=0,placed=false;for(let t=0;t<80&&!placed;t++){const a=Math.PI*2*i/Math.max(1,count)+(Math.random()-.5)*.5,r=4+Math.random()*4;x=Math.max(-38,Math.min(38,player.x+Math.sin(a)*r));z=Math.max(-38,Math.min(38,player.z-Math.cos(a)*r));if(!collides(x,z)&&Math.hypot(x-player.x,z-player.z)>2.5&&!allies.some(a=>Math.hypot(x-a.x,z-a.z)<2.2)&&!enemies.some(e=>e.hp>0&&Math.hypot(x-e.x,z-e.z)<2.0))placed=true;}if(!placed)continue;allies.push({id:i+1,name:allyNames[i%allyNames.length],x,z,hp:140,maxHp:140,color:'#218cff',boss:false,role:'ally',dead:false,spawnFx:.35,muzzleFx:0,cool:.4+Math.random()*.5,preferredDist:10+Math.random()*3,facingYaw:Math.atan2(player.x-x,player.z-z),strafeSign:Math.random()<.5?-1:1,strafePhase:Math.random()*Math.PI*2});initialEnemyHealth.set(allies[allies.length-1],140);}}
+
+// Compact noise-based sound design inspired by real firearm transients (synthesized; no recordings/files).
+let audioCtx=null,lastEnemyShotSound=0,lastCoverCheck=0,lastCoverState=false,lastDamageHp=100,lastPlayerFireSound=0;const noiseBuffers=new Map();
+function ensureAudio(){
+ try{if(!audioCtx){const AC=window.AudioContext||window.webkitAudioContext;if(AC)audioCtx=new AC();}if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();}catch(_){ }
+}
+function sfx(kind){
+ try{
+  if(kind==='fire'){const stamp=performance.now();if(stamp-lastPlayerFireSound<65)return;lastPlayerFireSound=stamp;}
+  ensureAudio();if(!audioCtx)return;const now=audioCtx.currentTime;
+  const tone=(freq,end,dur,type='triangle',vol=.035,delay=0)=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=type;o.frequency.setValueAtTime(freq,now+delay);o.frequency.exponentialRampToValueAtTime(Math.max(35,end),now+delay+dur);g.gain.setValueAtTime(.0001,now+delay);g.gain.exponentialRampToValueAtTime(vol,now+delay+.003);g.gain.exponentialRampToValueAtTime(.0001,now+delay+dur);o.connect(g);g.connect(audioCtx.destination);o.start(now+delay);o.stop(now+delay+dur+.012);};
+  const noise=(dur,vol,cutoff,delay=0)=>{const n=Math.max(1,Math.floor(audioCtx.sampleRate*dur)),key=n+'@'+audioCtx.sampleRate;let buf=noiseBuffers.get(key);if(!buf){buf=audioCtx.createBuffer(1,n,audioCtx.sampleRate);const data=buf.getChannelData(0);for(let i=0;i<n;i++){const env=Math.pow(1-i/n,2.6);data[i]=(Math.random()*2-1)*env;}noiseBuffers.set(key,buf);}const src=audioCtx.createBufferSource(),f=audioCtx.createBiquadFilter(),g=audioCtx.createGain();src.buffer=buf;f.type='lowpass';f.frequency.setValueAtTime(cutoff,now+delay);g.gain.setValueAtTime(vol,now+delay);g.gain.exponentialRampToValueAtTime(.0001,now+delay+dur);src.connect(f);f.connect(g);g.connect(audioCtx.destination);src.start(now+delay);src.stop(now+delay+dur+.01);};
+  if(kind==='fire'){
+   // Lightweight mobile gunshot: one cached noise buffer source plus one oscillator envelope.
+   // Avoid creating 4-5 audio nodes for every shot on lower-end phones.
+   const isHeavy=currentWeaponId==='sniper'||currentWeaponId==='deagle'||currentWeaponId==='lmg';
+   noise(isHeavy?.085:.055,isHeavy?.12:.075,isHeavy?1900:2500);
+   tone(isHeavy?88:118,isHeavy?38:58,isHeavy?.085:.055,'sawtooth',isHeavy?.045:.028);
+  }
+  else if(kind==='enemy'){noise(.085,.075,1650);tone(78,40,.09,'sawtooth',.025);}
+  else if(kind==='reload'){noise(.035,.025,1800);tone(370,230,.055,'square',.018,.07);noise(.045,.03,2400,.17);tone(620,330,.07,'triangle',.02,.29);}
+  else if(kind==='hit'){noise(.12,.10,900);tone(125,48,.12,'sawtooth',.04);}
+  else if(kind==='kill'){noise(.075,.06,1200);tone(150,65,.13,'triangle',.035);}
+  else if(kind==='jump'){tone(240,390,.09,'triangle',.028);noise(.045,.018,900,.025);}
+  else if(kind==='land'){noise(.075,.045,650);tone(105,62,.07,'triangle',.025);}
+  else if(kind==='down'){tone(260,130,.24,'sawtooth',.04);tone(180,90,.28,'triangle',.03,.12);}
+  else if(kind==='revive'){tone(420,620,.12,'triangle',.035);tone(620,880,.16,'triangle',.035,.11);}
+  else if(kind==='round'){tone(440,660,.13,'triangle',.035);tone(660,880,.16,'triangle',.035,.13);}
+  else if(kind==='victory'){tone(392,523,.18,'triangle',.04);tone(523,659,.2,'triangle',.04,.15);tone(659,784,.28,'triangle',.04,.32);}
+ }catch(_){ }
+}
+document.getElementById('startGame').addEventListener('click',()=>{
+ if(!playerName){document.getElementById('nameModal').style.display='flex';document.getElementById('playerNameInput').focus();return;}
+ ensureAudio();sfx('round');lastDamageHp=100;selectedMap='warehouse';gameMode=document.getElementById('modePick').value;configuredEnemyCount=Math.max(1,Math.min(6,parseInt(document.getElementById('enemyCount').value,10)||6));configuredAllyCount=gameMode==='team'?Math.max(0,Math.min(6,parseInt(document.getElementById('allyCount').value,10)||0)):0;teamDuration=Math.max(60,Math.min(300,parseInt(document.getElementById('teamDuration').value,10)||120));teamTimeLeft=teamDuration;teamRoundsSurvived=0;teamRespawnCooldown=0;missionKills=0;applyMap();if(collides(player.x,player.z)){player.x=0;player.z=0;}document.getElementById('missionLabel').textContent=gameMode==='team'?'🤝 تیمی • حذف آنمی‌ها و زنده ماندن تا پایان زمان':'🎯 تک‌نفره • شکست باس راند ۱۰';
+ hp=100;score=0;coins=0;round=1;intermission=0;roundTransition=false;bossAlive=false;gameWon=false;ownedWeapons=new Set(['pistol']);document.getElementById('buyAK').textContent='خرید AK-47 — ۲۵۰۰ دلار';document.getElementById('buyLMG').textContent='خرید تیربار — ۵۰۰۰ دلار';document.getElementById('buySniper').textContent='خرید اسنایپر — ۳۵۰۰ دلار';currentWeaponId='pistol';for(const id of Object.keys(weaponStates)){weaponStates[id]={mag:weaponSpecs[id].magSize,reserve:weaponSpecs[id].reserve};}weapon.mag=12;weapon.reserve=72;weapon.magSize=12;weapon.damage=18;weapon.bulletSpeed=48;weapon.reloadTime=.85;weapon.reload=0;weapon.cool=0;syncWeaponStats();stamina=100;
+ player.x=0;player.z=20;player.y=1.65;player.vy=0;climbingTower=null;player.yaw=0;player.pitch=0;moveVX=moveVZ=0;lookDX=lookDY=0;firing=false;crouchHeld=false;lastCoverState=false;document.getElementById('coverToast').style.opacity='0';document.getElementById('crouch').classList.remove('active');document.getElementById('crouch').setAttribute('aria-pressed','false');enemyBullets.length=0;playerBullets.length=0;combatEffects.length=0;
+ document.getElementById('gameOverScreen').style.display='none';document.getElementById('roundScreen').style.display='none';document.getElementById('shopScreen').style.display='none';
+ gameStarted=true;document.getElementById('startScreen').style.display='none';document.getElementById('teamScore').style.display=gameMode==='team'?'block':'none';updateCoins();allies.length=0;spawnRound(round,false,gameMode==='team'?configuredEnemyCount:configuredEnemyCount,gameMode==='team');if(gameMode==='team'){spawnAllies(configuredAllyCount);document.getElementById('roundLabel').textContent=formatTeamTime(teamTimeLeft);}else{document.getElementById('roundLabel').textContent='راند ۱';}
+});
+function returnToMainMenu(){gameStarted=false;gameWon=false;roundTransition=false;hp=100;enemies.length=0;allies.length=0;document.getElementById('gameOverScreen').style.display='none';document.getElementById('startScreen').style.display='flex';document.getElementById('teamScore').style.display='none';document.getElementById('shopScreen').style.display='none';document.getElementById('roundScreen').style.display='none';}
+document.getElementById('goRestart').addEventListener('click',returnToMainMenu);
+function openShop(){if(!gameStarted||hp<=0)return;document.getElementById('shopStatus').textContent=`دلار: ${coins} | سلامتی: ${Math.ceil(hp)}٪ | خشاب: ${weapon.mag} / ${weapon.reserve}`;document.getElementById('shopScreen').style.display='flex';}
+document.getElementById('shopBtn').addEventListener('click',openShop);
+document.getElementById('closeShop').addEventListener('click',()=>document.getElementById('shopScreen').style.display='none');
+function purchaseWeapon(id,price){if(ownedWeapons.has(id)){document.getElementById('shopStatus').textContent='این سلاح را قبلاً خریدی؛ از دکمهٔ سلاح‌ها انتخابش کن.';return;}if(coins<price){document.getElementById('shopStatus').textContent=`دلار کافی نداری؛ ${price} دلار لازم است.`;return;}coins-=price;ownedWeapons.add(id);weaponStates[id]={mag:weaponSpecs[id].magSize,reserve:weaponSpecs[id].reserve};updateCoins();syncWeaponStats();switchWeapon(id);document.getElementById('shopStatus').textContent=`${weaponSpecs[id].name} خریداری شد! حالا می‌توانی از دکمهٔ سلاح‌ها انتخابش کنی.`;const buyId=({ak:'buyAK',lmg:'buyLMG',sniper:'buySniper'})[id];document.getElementById(buyId).textContent=weaponSpecs[id].name+' خریداری شد ✓';}
+document.getElementById('buyKnife').addEventListener('click',()=>{if(ownedWeapons.has('knife')){document.getElementById('shopStatus').textContent='نایف را قبلاً خریدی.';return;}if(coins<500){document.getElementById('shopStatus').textContent='برای نایف ۵۰۰ دلار لازم داری.';return;}coins-=500;ownedWeapons.add('knife');weaponStates.knife={mag:1,reserve:0};updateCoins();switchWeapon('knife');document.getElementById('buyKnife').textContent='نایف خریداری شد ✓';});
+document.getElementById('buyAK').addEventListener('click',()=>purchaseWeapon('ak',2500));
+document.getElementById('buySniper').addEventListener('click',()=>purchaseWeapon('sniper',3500));
+document.getElementById('buyLMG').addEventListener('click',()=>purchaseWeapon('lmg',5000));
+document.getElementById('buyAmmo').addEventListener('click',()=>{if(coins<500){document.getElementById('shopStatus').textContent='دلار کافی نداری؛ برای هر کیل ۲۰۰ دلار می‌گیری.';return;}coins-=500;weapon.mag=weapon.magSize;weapon.reserve=Math.min(weapon.reserve+90,weaponSpecs[currentWeaponId].reserve*2);weaponStates[currentWeaponId]={mag:weapon.mag,reserve:weapon.reserve};updateAmmoHud(true);updateCoins();document.getElementById('shopStatus').textContent='خرید انجام شد! خشاب پر شد و ۹۰ تیر ذخیره گرفتی.';});
+document.getElementById('buyMag').addEventListener('click',()=>{if(coins<250){document.getElementById('shopStatus').textContent='برای این خرید ۲۵۰ دلار لازم داری.';return;}coins-=250;weapon.reserve=Math.min(weapon.reserve+30,weaponSpecs[currentWeaponId].reserve*2);weaponStates[currentWeaponId]={mag:weapon.mag,reserve:weapon.reserve};updateAmmoHud(true);updateCoins();document.getElementById('shopStatus').textContent=`۳۰ تیر اضافه شد! دلار: ${coins}`;});
+document.getElementById('buyHealth50').addEventListener('click',()=>{if(hp>=100){document.getElementById('shopStatus').textContent='سلامتی‌ات کامله؛ نیازی به خرید نداری.';return;}if(coins<1000){document.getElementById('shopStatus').textContent='برای افزایش ۵۰ واحد سلامتی، ۱۰۰۰ دلار لازم داری.';return;}coins-=1000;hp=Math.min(100,hp+50);updateCoins();document.getElementById('shopStatus').textContent=`سلامتی افزایش یافت: ${Math.ceil(hp)}٪ | دلار: ${coins}`;});
+document.getElementById('buyHealthFull').addEventListener('click',()=>{if(hp>=100){document.getElementById('shopStatus').textContent='سلامتی‌ات همین الان کامله!';return;}if(coins<2000){document.getElementById('shopStatus').textContent='برای سلامتی کامل، ۲۰۰۰ دلار لازم داری.';return;}coins-=2000;hp=100;updateCoins();document.getElementById('shopStatus').textContent=`سلامتی کامل شد! دلار: ${coins}`;});
+document.getElementById('continueRound').addEventListener('click',()=>{if(gameWon&&gameMode!=='team'){gameWon=false;returnToMainMenu();return;}if(roundTransition){document.getElementById('roundScreen').style.display='none';roundTransition=false;gameWon=false;intermission=0;round++;enemyBullets.length=0;playerBullets.length=0;missionKills=0;if(gameMode==='team'){teamTimeLeft=teamDuration;teamRespawnCooldown=0;spawnRound(round,false,configuredEnemyCount,true);spawnAllies(configuredAllyCount);document.getElementById('roundLabel').textContent=formatTeamTime(teamTimeLeft);document.getElementById('missionLabel').textContent='🤝 تیمی • راند '+round+' • حذف انمی‌ها';}else{spawnRound(round);}}});
+
+const BASE=54;
+const walls=[
+{x:0,z:-BASE,w:BASE*2,d:3.2,h:7.5,c:'#56616a',fence:true},
+{x:-BASE,z:0,w:3.2,d:BASE*2,h:7.5,c:'#56616a',fence:true},
+{x:BASE,z:0,w:3.2,d:BASE*2,h:7.5,c:'#56616a',fence:true},
+{x:0,z:BASE,w:BASE*2,d:3.2,h:7.5,c:'#56616a',fence:true},
+// Colorful freight containers replacing the old generic blocks.
+{x:-12,z:-12,w:8.2,d:3.2,h:3.4,c:'#1679a8',container:true,solid:true},
+{x:14,z:-10,w:8.5,d:3.2,h:3.4,c:'#d14c38',container:true,solid:true},
+{x:-4,z:10,w:8.5,d:3.2,h:3.3,c:'#d9a329',container:true,solid:true},
+{x:20,z:15,w:7.2,d:3.1,h:3.2,c:'#26865c',container:true,solid:true},
+{x:-23,z:19,w:7.5,d:3.1,h:3.2,c:'#8247a8',container:true,solid:true},
+// Low highway-style concrete Jersey barriers scattered as tactical cover.
+{x:-1,z:-20,w:5.8,d:1.25,h:1.35,c:'#a6a9a6',barrier:true,solid:true},
+{x:28,z:-4,w:5.8,d:1.25,h:1.35,c:'#b7b9b4',barrier:true,solid:true},
+{x:-17,z:1,w:5.8,d:1.25,h:1.35,c:'#a6a9a6',barrier:true,solid:true},
+{x:8,z:28,w:5.8,d:1.25,h:1.35,c:'#b7b9b4',barrier:true,solid:true},
+// Climbable watch-tower structures: raised platforms with front-facing ladder rails.
+{x:-39,z:-2,w:5.2,d:5.2,h:6.8,c:'#596a75',tower:true,solid:true},
+{x:39,z:23,w:5.2,d:5.2,h:6.8,c:'#596a75',tower:true,solid:true},
+// Existing barrels retained as extra cover.
+{x:-30,z:-5,w:1.35,d:1.35,h:1.55,c:'#c34b35',barrel:true,solid:true},
+{x:31,z:-23,w:1.35,d:1.35,h:1.55,c:'#c34b35',barrel:true,solid:true},
+{x:2,z:-31,w:1.35,d:1.35,h:1.55,c:'#c34b35',barrel:true,solid:true},
+{x:31,z:26,w:1.35,d:1.35,h:1.55,c:'#c34b35',barrel:true,solid:true},
+{x:-30,z:30,w:1.35,d:1.35,h:1.55,c:'#c34b35',barrel:true,solid:true},
+// Expanded industrial yard: compact sheds, stacked cargo and tower bases for more varied cover.
+{x:-35,z:-20,w:8,d:7,h:4.8,c:'#65717a',shed:true,solid:true},
+{x:35,z:4,w:8.5,d:7,h:4.5,c:'#5b6873',shed:true,solid:true},
+{x:-34,z:8,w:5.2,d:2.8,h:5.4,c:'#b34b38',container:true,solid:true},
+{x:5,z:-36,w:9,d:3.2,h:3.4,c:'#287eaa',container:true,solid:true},
+{x:34,z:-35,w:7,d:3.2,h:3.4,c:'#b97a28',container:true,solid:true},
+{x:-8,z:34,w:6.5,d:3.1,h:3.3,c:'#347a60',container:true,solid:true},
+{x:13,z:2,w:4.5,d:1.2,h:1.45,c:'#a8aaa5',barrier:true,solid:true},
+{x:-25,z:-32,w:4.5,d:1.2,h:1.45,c:'#a8aaa5',barrier:true,solid:true},
+{x:27,z:33,w:4.5,d:1.2,h:1.45,c:'#a8aaa5',barrier:true,solid:true},
+{x:0,z:24,w:1.4,d:1.4,h:2.1,c:'#c34b35',barrel:true,solid:true},
+{x:-14,z:-29,w:1.4,d:1.4,h:2.1,c:'#c34b35',barrel:true,solid:true}
+];
+
+function project(x,y,z){
+ const dx=x-player.x,dz=z-player.z,cy=Math.cos(player.yaw),sy=Math.sin(player.yaw);
+ const cx=dx*cy-dz*sy, cz=dx*sy+dz*cy;
+ if(cz<=.1)return null;
+ const f=Math.min(W,H)*.9*(aimEnabled?1.28:1);
+ // Pitch is part of the camera now: drag up = look up, drag down = look down.
+ const cameraY=player.y-(crouchHeld?.55:0);
+ const v=y-cameraY;
+ const screenY=H/2 - (v*f/cz) + Math.tan(player.pitch)*f;
+ return {x:HALF_W+cx/cz*f,y:screenY,z:cz,s:f/cz};
+}
+function shade(col,k){let n=parseInt(col.slice(1),16);let r=Math.max(0,Math.min(255,((n>>16)&255)*k)),g=Math.max(0,Math.min(255,((n>>8)&255)*k)),b=Math.max(0,Math.min(255,(n&255)*k));return`rgb(${r},${g},${b})`}
+function worldToCamera(x,y,z){
+ const dx=x-player.x,dz=z-player.z,cy=Math.cos(player.yaw),sy=Math.sin(player.yaw);
+ return {x:dx*cy-dz*sy,z:dx*sy+dz*cy,y:y-(player.y-(crouchHeld?.55:0))};
+}
+function drawWorldPoly(poly,color){
+ // Stable near-plane clipping. The old version discarded a whole face when only
+ // one vertex got close to the camera, which made walls pop invisible. We clip the
+ // convex face instead and triangulate it so no giant polygon can be stretched.
+ const near=.28;
+ const out=[];
+ for(let i=0;i<poly.length;i++){
+  const a=poly[i],b=poly[(i+1)%poly.length];
+  const ain=a.z>=near, bin=b.z>=near;
+  if(ain) out.push(a);
+  if(ain!==bin){
+   const t=(near-a.z)/(b.z-a.z);
+   out.push({x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t,z:near});
+  }
+ }
+ if(out.length<3)return;
+ const f=F,off=Math.tan(player.pitch)*f;
+ ctx.fillStyle=color;
+ // Fast path: ordinary 4-point face entirely in front of the near plane.
+ if(out.length===poly.length && poly.length===4){
+  const a=out[0],b=out[1],d=out[2],e=out[3];
+  ctx.beginPath();
+  ctx.moveTo(HALF_W+a.x/a.z*f,HALF_H-a.y/a.z*f+off);
+  ctx.lineTo(HALF_W+b.x/b.z*f,HALF_H-b.y/b.z*f+off);
+  ctx.lineTo(HALF_W+d.x/d.z*f,HALF_H-d.y/d.z*f+off);
+  ctx.lineTo(HALF_W+e.x/e.z*f,HALF_H-e.y/e.z*f+off);
+  ctx.closePath();ctx.fill();return;
+ }
+ // Convex clipped polygon -> triangles only when the near plane is actually crossed.
+ for(let i=1;i<out.length-1;i++){
+  const a=out[0],b=out[i],d=out[i+1];
+  ctx.beginPath();
+  ctx.moveTo(HALF_W+a.x/a.z*f,HALF_H-a.y/a.z*f+off);
+  ctx.lineTo(HALF_W+b.x/b.z*f,HALF_H-b.y/b.z*f+off);
+  ctx.lineTo(HALF_W+d.x/d.z*f,HALF_H-d.y/d.z*f+off);
+  ctx.closePath();ctx.fill();
+ }
+}
+function rect3D(o){
+ // World-locked cuboid with real back-face selection. Only faces whose outward
+ // normal points toward the player are drawn; this prevents hidden faces from
+ // painting over visible walls and causing the old "pages".
+ const x=o.x,w=o.w/2,z=o.z,d=o.d/2,h=o.h;
+ const p000=worldToCamera(x-w,0,z-d),p100=worldToCamera(x+w,0,z-d),p110=worldToCamera(x+w,0,z+d),p010=worldToCamera(x-w,0,z+d);
+ const p001=worldToCamera(x-w,h,z-d),p101=worldToCamera(x+w,h,z-d),p111=worldToCamera(x+w,h,z+d),p011=worldToCamera(x-w,h,z+d);
+ const faces=[
+  {p:[p000,p100,p101,p001],n:[0,0,-1],c:shade(o.c,.82),center:[x, h*.5, z-d]},
+  {p:[p100,p110,p111,p101],n:[1,0,0],c:shade(o.c,.72),center:[x+w,h*.5,z]},
+  {p:[p110,p010,p011,p111],n:[0,0,1],c:o.c,center:[x,h*.5,z+d]},
+  {p:[p010,p000,p001,p011],n:[-1,0,0],c:shade(o.c,.58),center:[x-w,h*.5,z]},
+  {p:[p001,p101,p111,p011],n:[0,1,0],c:shade(o.c,1.08),center:[x,h,z]}
+ ];
+ const visible=[];
+ for(const face of faces){
+  const vx=player.x-face.center[0],vy=player.y-face.center[1],vz=player.z-face.center[2];
+  if(face.n[0]*vx+face.n[1]*vy+face.n[2]*vz>0.001){
+   let avg=0;for(const p of face.p)avg+=p.z;avg/=face.p.length;
+   visible.push({face,z:avg});
+  }
+ }
+ // Farther faces first. There are only a few faces, so this is cheap and avoids
+ // depending on the order in which walls happen to be stored.
+ visible.sort((a,b)=>b.z-a.z);
+ for(const item of visible)drawWorldPoly(item.face.p,item.face.c);
+}
+const fenceLines=[];
+(function buildFence(){
+ const wireY=7.78, postBottom=7.48, span=BASE-1.05;
+ const segs=[[[-span,-BASE],[span,-BASE]],[[BASE,-span],[BASE,span]],[[span,BASE],[-span,BASE]],[[-BASE,span],[-BASE,-span]]];
+ for(const s of segs){
+  const [a,b]=s; fenceLines.push([a[0],wireY,a[1],b[0],wireY,b[1],2.2,'#151a1e']);
+  fenceLines.push([a[0],wireY-.22,a[1],b[0],wireY-.22,b[1],1.2,'#30383e']);
+  const dx=b[0]-a[0],dz=b[1]-a[1],len=Math.hypot(dx,dz),n=Math.max(2,Math.floor(len/10));
+  for(let i=1;i<n;i++){const t=i/n,x=a[0]+dx*t,z=a[1]+dz*t,side=.34,nx=-dz/len*side,nz=dx/len*side;
+   fenceLines.push([x,postBottom,z,x,wireY+.18,z,2.2,'#22282d']);
+   fenceLines.push([x+nx,wireY-.13,z+nz,x-nx,wireY+.16,z-nz,1.6,'#1b2025']);
+  }
+ }
+})();
+function drawBarbedFence(){
+ const off=Math.tan(player.pitch)*F,near=.22;
+ for(let i=0;i<fenceLines.length;i++){
+  const q=fenceLines[i];
+  // Distant fence wires contribute little on a phone; skip them before projection.
+  const adx=q[0]-player.x,adz=q[2]-player.z,bdx=q[3]-player.x,bdz=q[5]-player.z;
+  if(adx*adx+adz*adz>1600 && bdx*bdx+bdz*bdz>1600)continue;
+  const A=worldToCamera(q[0],q[1],q[2]),B=worldToCamera(q[3],q[4],q[5]);
+  if(A.z<=near&&B.z<=near)continue;
+  let ax=A.x,ay=A.y,az=A.z,bx=B.x,by=B.y,bz=B.z;
+  if(az<=near||bz<=near){const t=(near-az)/(bz-az);const x=ax+(bx-ax)*t,y=ay+(by-ay)*t;if(az<=near){ax=x;ay=y;az=near}else{bx=x;by=y;bz=near}}
+  ctx.strokeStyle=q[7];ctx.lineWidth=q[6];ctx.lineCap='round';ctx.beginPath();ctx.moveTo(HALF_W+ax/az*F,HALF_H-ay/az*F+off);ctx.lineTo(HALF_W+bx/bz*F,HALF_H-by/bz*F+off);ctx.stroke();
+ }
+}
+let losCacheX=Infinity,losCacheZ=Infinity,losCacheTime=0;
+const enemyVisible=new Map();
+let wallOrder=[];
+let lastOrderYaw=999,lastOrderX=999,lastOrderZ=999;
+function refreshWallOrder(){
+ // Sorting all walls every frame is unnecessary and was a measurable rotation cost.
+ // Re-sort only after a small camera-angle/position change.
+ if(Math.abs(player.yaw-lastOrderYaw)<0.10 && Math.abs(player.x-lastOrderX)<0.75 && Math.abs(player.z-lastOrderZ)<0.75 && wallOrder.length) return;
+ wallOrder.length=0;
+ const cy=Math.cos(player.yaw),sy=Math.sin(player.yaw);
+ for(const o of walls){
+  const dx=o.x-player.x,dz=o.z-player.z;
+  wallOrder.push({o,z:dx*sy+dz*cy});
+ }
+ wallOrder.sort((a,b)=>b.z-a.z);
+ lastOrderYaw=player.yaw;lastOrderX=player.x;lastOrderZ=player.z;
+}
+function refreshEnemyVisibility(force=false){
+ // Recompute line of sight at a short interval; this is much cheaper than
+ // testing every enemy against every wall on every animation frame.
+ if(!force && Math.hypot(player.x-losCacheX,player.z-losCacheZ)<.45 && performance.now()-losCacheTime<140)return;
+ losCacheX=player.x;losCacheZ=player.z;losCacheTime=performance.now();
+ for(const e of enemies){
+  const visible=e.hp>0 && !blockedByWorld(player.x,player.z,e.x,e.z,player.y-(crouchHeld?.55:0),e.boss?1.85:1.25);
+  enemyVisible.set(e,visible);e.visTarget=visible?1:0;
+ }
+}
+function enemyDraw(e){
+ if(e.hp<=0)return;
+ // Stable line-of-sight: actors behind solid walls are hidden immediately, without stale-frame flicker.
+ const occluded=blockedByWorld(player.x,player.z,e.x,e.z,player.y-(crouchHeld?.55:0),e.boss?1.85:1.25);
+ if(occluded)return;
+ ctx.save();
+ const dx=player.x-e.x,dz=player.z-e.z;
+ // Enemy faces the player in world space, not as a flat camera-facing billboard.
+ if(e.spawnFx>0){const sp=project(e.x,.08,e.z);if(sp){ctx.save();ctx.globalAlpha=Math.min(1,e.spawnFx/.85);ctx.strokeStyle='#72eaff';ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(sp.x,sp.y,Math.max(8,sp.s*.65),Math.max(4,sp.s*.18),0,0,Math.PI*2);ctx.stroke();ctx.restore();}}
+ if(e.muzzleFx>0){const mp=project(e.x,1.5,e.z);if(mp){ctx.save();ctx.globalAlpha=Math.min(1,e.muzzleFx/.12);ctx.fillStyle='#ffe48a';ctx.beginPath();ctx.arc(mp.x,mp.y,Math.max(4,mp.s*.12),0,Math.PI*2);ctx.fill();ctx.restore();}}
+ const yaw=e.facingYaw??Math.atan2(dx,dz), cs=Math.cos(yaw), sn=Math.sin(yaw);
+ const feet=project(e.x,0,e.z),head=project(e.x,e.boss?2.85:2.1,e.z);
+ if(!feet||!head){ctx.restore();return;}
+ const scale=feet.s;if(scale<.08){ctx.restore();return;} // Keep distant enemies rendered; the old .65 cutoff made them pop out and reappear as the player moved.
+ // Contact shadow is anchored to the enemy's ground position, not its animated body.
+ ctx.save();ctx.globalAlpha*=.34;ctx.fillStyle='#080d12';ctx.beginPath();ctx.ellipse(feet.x,feet.y+Math.max(1,scale*.035),Math.max(2,scale*(e.boss?.56:.39)),Math.max(1.5,scale*(e.boss?.16:.12)),0,0,Math.PI*2);ctx.fill();ctx.restore();
+ function box(lx,y0,lz,w,h,d,col){
+  const pts=[];
+  for(const [xx,yy,zz] of [[-w/2,y0,-d/2],[w/2,y0,-d/2],[w/2,y0+h,-d/2],[-w/2,y0+h,-d/2],[-w/2,y0,d/2],[w/2,y0,d/2],[w/2,y0+h,d/2],[-w/2,y0+h,d/2]]){
+   const wx=e.x+lx+xx*cs+zz*sn, wz=e.z-lz-xx*sn+zz*cs;
+   pts.push(worldToCamera(wx,yy,wz));
+  }
+  const faces=[[0,1,2,3],[4,7,6,5],[0,4,5,1],[3,2,6,7],[0,3,7,4],[1,5,6,2]];
+  const shades=[.58,1,.72,.84,.65,.9];
+  const order=faces.map((f,i)=>({f,i,z:f.reduce((a,k)=>a+pts[k].z,0)/4})).sort((a,b)=>b.z-a.z);
+  for(const q of order){drawWorldPoly(q.f.map(k=>pts[k]),shade(col,shades[q.i]));}
+ }
+ const mul=e.boss?1.32:1;
+ const bodyW=.85*mul, bodyD=.48*mul, bodyH=1.02*mul;
+ // boots and legs
+ box(-.23*mul,.08,-.02,.25*mul,.55*mul,.27*mul,'#202832');box(.23*mul,.08,-.02,.25*mul,.55*mul,.27*mul,'#202832');
+ box(-.24*mul,.02,.06,.34*mul,.15*mul,.45*mul,'#101820');box(.24*mul,.02,.06,.34*mul,.15*mul,.45*mul,'#101820');
+ box(0,.62*mul,0,bodyW,bodyH,bodyD,e.role==='ally'?'#155d91':e.color);
+ if(scale>2.0){
+  box(0,.86*mul,.025*mul,bodyW*.72,.24*mul,bodyD*1.1,e.role==='ally'?'#27bde9':'#26313b');
+  box(-.55*mul,.86*mul,0,.24*mul,.32*mul,.28*mul,e.role==='ally'?'#1b86c0':'#18212a');box(.55*mul,.86*mul,0,.24*mul,.32*mul,.28*mul,e.role==='ally'?'#1b86c0':'#18212a');
+ }
+ // Separate upper arms, forearms and hands give the soldier a more readable 3D silhouette.
+ const sleeve=e.role==='ally'?'#155d91':'#303a43', glove='#151b20';
+ box(-.55*mul,1.03*mul,.015*mul,.25*mul,.42*mul,.29*mul,sleeve);
+ box(.55*mul,1.03*mul,.015*mul,.25*mul,.42*mul,.29*mul,sleeve);
+ box(-.47*mul,.91*mul,.19*mul,.19*mul,.20*mul,.25*mul,e.role==='ally'?'#65e5ff':'#59636a');
+ box(.38*mul,.91*mul,.20*mul,.19*mul,.20*mul,.25*mul,e.role==='ally'?'#65e5ff':'#59636a');
+ box(-.42*mul,.83*mul,.30*mul,.18*mul,.16*mul,.18*mul,glove);
+ box(.31*mul,.83*mul,.31*mul,.18*mul,.16*mul,.18*mul,glove);
+ if(e.role==='ally'){
+  // Cyan shoulder/arm bands and a compact backpack make friendlies recognizable at a glance.
+  box(-.55*mul,1.02*mul,.015*mul,.28*mul,.13*mul,.30*mul,'#65e5ff');
+  box(.55*mul,1.02*mul,.015*mul,.28*mul,.13*mul,.30*mul,'#65e5ff');
+  box(0,.90*mul,-.30*mul,.48*mul,.55*mul,.22*mul,'#0c4269');
+  box(0,.72*mul,.252*mul,.42*mul,.12*mul,.035*mul,'#b5f6ff');
+ }
+ box(0,1.65*mul,0,.34*mul,.2*mul,.32*mul,e.role==='ally'?'#d7f7ff':'#c18a68');
+ box(0,1.82*mul,0,.62*mul,.48*mul,.58*mul,e.role==='ally'?'#16a9d6':'#303c47');
+ if(e.role==='ally'){
+  box(0,1.88*mul,.286*mul,.42*mul,.16*mul,.045*mul,'#062b4b');
+  box(0,1.90*mul,.312*mul,.24*mul,.055*mul,.025*mul,'#b9f5ff');
+ }else if(scale>1.6)box(0,1.99*mul,.29*mul,.47*mul,.12*mul,.035*mul,'#9be7ff');
+ // Rifle follows the enemy's own facing direction.
+ if(scale>1.5)box(-.12*mul,1.03*mul,.28*mul,.82*mul,.12*mul,.13*mul,'#11161b');
+ const barW=scale*(e.boss?2.15:1.35),barY=head.y-scale*(e.boss?1.0:.58),maxHp=initialEnemyHealth.get(e)||100;
+ ctx.fillStyle='#070b10';ctx.fillRect(head.x-barW/2-1,barY-1,barW+2,7);
+ ctx.fillStyle='#3a171d';ctx.fillRect(head.x-barW/2,barY,barW,5);
+ ctx.fillStyle=e.role==='ally'?'#42bfff':(e.hp/maxHp<=.25?'#ff394d':'#46df78');ctx.fillRect(head.x-barW/2,barY,barW*Math.max(0,e.hp/maxHp),5);
+ if(e.reloading){ctx.fillStyle='#fff1a6';ctx.font='bold '+Math.max(9,Math.min(13,scale*.22))+'px Arial';ctx.textAlign='center';ctx.fillText('RELOAD',head.x,barY-13);}
+
+ if(e.boss){ctx.fillStyle='#fff';ctx.font='900 12px Arial';ctx.textAlign='center';ctx.fillText('BOSS',head.x,barY-5)}else if(e.role==='ally'){ctx.fillStyle='#bdeaff';ctx.font='900 10px Arial';ctx.textAlign='center';ctx.fillText(e.name||'ALLY',head.x,barY-5)}
+ ctx.restore();
+}
+function segmentHitsRect(x1,z1,x2,z2,o){
+ const minX=o.x-o.w/2, maxX=o.x+o.w/2;
+ const minZ=o.z-o.d/2, maxZ=o.z+o.d/2;
+ const dx=x2-x1,dz=z2-z1;
+ let tmin=0,tmax=1;
+ if(Math.abs(dx)<1e-7){if(x1<minX||x1>maxX)return null}
+ else{let a=(minX-x1)/dx,b=(maxX-x1)/dx;if(a>b)[a,b]=[b,a];tmin=Math.max(tmin,a);tmax=Math.min(tmax,b);if(tmin>tmax)return null}
+ if(Math.abs(dz)<1e-7){if(z1<minZ||z1>maxZ)return null}
+ else{let a=(minZ-z1)/dz,b=(maxZ-z1)/dz;if(a>b)[a,b]=[b,a];tmin=Math.max(tmin,a);tmax=Math.min(tmax,b);if(tmin>tmax)return null}
+ return tmin;
+}
+function blockedByWorld(x1,z1,x2,z2,y1=1.25,y2=1.25){
+ // A wall blocks only when the ray actually crosses its height. Also treat a
+ // segment that starts inside a solid as blocked (the old t>0 test let shots escape it).
+ for(const o of walls){
+  if(o.destroyed)continue;
+  const t=segmentHitsRect(x1,z1,x2,z2,o);
+  if(t===null)continue;
+  const safeT=Math.max(0,Math.min(1,t));
+  const hitY=y1+(y2-y1)*safeT;
+  const startedInside=(Math.abs(x1-o.x)<o.w/2 && Math.abs(z1-o.z)<o.d/2);
+  if((t>.002 || startedInside) && hitY>=0 && hitY<=o.h+.03)return true;
+ }
+ return false;
+}
+function rayHit(){
+ // Select the nearest living enemy whose visible body overlaps the crosshair.
+ // Screen-space testing matches the rendered perspective and fixes shots that looked on-target but missed.
+ let best=null,bestDist=Infinity;
+ for(const e of enemies){
+  if(e.hp<=0)continue;
+  const dx=e.x-player.x,dz=e.z-player.z,dist=Math.hypot(dx,dz);
+  if(dist>45||dist>=bestDist)continue;
+  const aim=project(e.x,e.boss?1.85:1.25,e.z);
+  if(!aim)continue;
+  const horizontal=Math.abs(aim.x-HALF_W),vertical=Math.abs(aim.y-HALF_H);
+  const radiusX=Math.max(18,aim.s*(e.boss ? .78 : .58));
+  const radiusY=Math.max(25,aim.s*(e.boss ? 1.65 : 1.15));
+  if(horizontal<=radiusX&&vertical<=radiusY){best=e;bestDist=dist;}
+ }
+ // Only the selected target needs a wall check; avoids testing every wall for every enemy on each shot.
+ return best && !blockedByWorld(player.x,player.z,best.x,best.z,player.y-(crouchHeld?.55:0),best.boss?1.85:1.25) ? best : null;
+}
+const allyNames=['Jack','Noah','Liam','Ethan','Lucas','Mason'];const killFeedEl=document.getElementById('killFeed');function addKillFeed(killer,target,kind='kill'){if(!killFeedEl)return;const row=document.createElement('div');row.style.cssText='background:#07111de8;border:1px solid #ffffff20;border-radius:5px;padding:3px 5px;animation:feedIn .15s ease-out;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;box-sizing:border-box';row.innerHTML=`<span style="color:${'#8de0ff'}">${String(killer).toUpperCase()}</span> <span style="color:#fff">KILLED</span> <span style="color:#ff7777">${String(target==='enemy'?'ENEMY':target).toUpperCase()}</span>`;killFeedEl.prepend(row);while(killFeedEl.children.length>4)killFeedEl.lastElementChild.remove();setTimeout(()=>row.remove(),3500);}
+function fire(){
+ if(playerDowned||hp<=0)return;
+ if(currentWeaponId==='knife'){if(weapon.cool>0)return;weapon.cool=.52;const reach=2.25;let target=null,bd=reach;for(const e of enemies){if(e.hp<=0)continue;const dx=e.x-player.x,dz=e.z-player.z,d=Math.hypot(dx,dz);if(d<bd&&d>0.01){const yaw=Math.atan2(dx,dz),diff=Math.abs(Math.atan2(Math.sin(yaw-player.yaw),Math.cos(yaw-player.yaw)));if(diff<.72&&!blockedByWorld(player.x,player.z,e.x,e.z,1.2,1.2)){target=e;bd=d;}}}if(target){target.hp=Math.max(0,target.hp-50);if(combatEffects.length<MAX_COMBAT_EFFECTS)combatEffects.push({kind:'hit',x:target.x,z:target.z,t:.18});if(target.hp<=0&&!target.dead){target.dead=true;score++;missionKills++;coins+=250;updateCoins();addKillFeed(playerName||'PLAYER','enemy','player');sfx('kill');}else addKillFeed(playerName||'PLAYER','enemy','hit');}return;}
+ if(weapon.reload>0||weapon.cool>0)return;
+ if(weapon.mag<=0){reload();return}
+ sfx('fire');weapon.mag--;weapon.cool=weapon.fireRate/1000;weapon.recoil=1;weapon.flash=.065;
+ // Fast, straight world-space bullet launched from the player's weapon muzzle.
+ const cp=Math.cos(player.pitch),sp=Math.sin(player.pitch),fx=Math.sin(player.yaw),fz=Math.cos(player.yaw);
+ const dx=fx*cp,dy=sp,dz=fz*cp;
+ const sx=player.x+fx*.48,sy=player.y-.34,sz=player.z+fz*.48;
+ if(playerBullets.length<24)playerBullets.push({x:sx,y:sy,z:sz,px:sx,py:sy,pz:sz,vx:dx*weapon.bulletSpeed,vy:dy*weapon.bulletSpeed,vz:dz*weapon.bulletSpeed,life:2.0,damage:weapon.damage,color:weaponSpecs[currentWeaponId].color});
+ if(combatEffects.length<MAX_COMBAT_EFFECTS)combatEffects.push({kind:'shot',x1:sx,y1:sy,z1:sz,x2:sx+dx*2.4,y2:sy+dy*2.4,z2:sz+dz*2.4,t:.075});
+}
+
+function reload(){if(playerDowned||hp<=0)return;if(currentWeaponId==='knife')return;if(weapon.reload>0||weapon.mag>=weapon.magSize||weapon.reserve<=0)return;ensureAudio();sfx('reload');weapon.reload=weapon.reloadTime}
+function jump(){if(!playerDowned&&hp>0&&player.y<=1.652){player.vy=6.7;sfx('jump')}}
+
+let firing=false;
+const fireBtn=document.getElementById('fire');
+fireBtn.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();firing=true;fire()});
+['pointerup','pointercancel','pointerleave'].forEach(ev=>fireBtn.addEventListener(ev,e=>{e.preventDefault();e.stopPropagation();firing=false}));
+document.getElementById('reload').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();reload()});
+const sprintBtn=document.getElementById('sprint');
+const gunEl=document.getElementById('gun'),flashEl=document.getElementById('flash'),ammoEl=document.getElementById('ammo'),hpEl=document.getElementById('hpbar'),staminaEl=document.getElementById('staminabar');
+sprintBtn.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();sprintHeld=true;sprintBtn.setPointerCapture?.(e.pointerId)});
+['pointerup','pointercancel','pointerleave'].forEach(ev=>sprintBtn.addEventListener(ev,e=>{e.preventDefault();e.stopPropagation();sprintHeld=false}));
+const crouchBtn=document.getElementById('crouch');
+crouchBtn.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();crouchHeld=!crouchHeld;crouchBtn.classList.toggle('active',crouchHeld);crouchBtn.setAttribute('aria-pressed',String(crouchHeld));});
+
+document.getElementById('jump').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();jump()});
+
+
+let looking=false,lastX=0,lastY=0,lookPointerId=null;
+addEventListener('pointerdown',e=>{
+ if(e.target.closest('#joystick')||e.target.closest('#buttons')||e.target.closest('#aimBtn'))return;
+ looking=true;lookPointerId=e.pointerId;lastX=e.clientX;lastY=e.clientY;
+});
+addEventListener('pointermove',e=>{
+ if(!looking||e.pointerId!==lookPointerId)return;
+ // Accumulate the full finger delta; apply it once per animation frame.
+ lookDX += e.clientX-lastX;
+ lookDY += e.clientY-lastY;
+ lastX=e.clientX;lastY=e.clientY;
+});
+function stopLooking(e){if(e && e.pointerId!==lookPointerId)return;looking=false;lookPointerId=null;}
+addEventListener('pointerup',stopLooking);addEventListener('pointercancel',stopLooking);addEventListener('blur',()=>stopLooking());
+
+const joy=document.getElementById('joystick'),stick=document.getElementById('stick');
+let jActive=false,jx=0,jy=0;
+let joyCX=0,joyCY=0;
+function updateJoy(e){
+ const cx=joyCX,cy=joyCY;
+ let x=e.clientX-cx,y=e.clientY-cy,m=48,l=Math.hypot(x,y);
+ if(l>m){x=x/l*m;y=y/l*m}
+ jx=x/m;jy=y/m;
+ stick.style.transform=`translate(${x}px,${y}px)`;
+}
+joy.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();jActive=true;const r=joy.getBoundingClientRect();joyCX=r.left+r.width/2;joyCY=r.top+r.height/2;joy.setPointerCapture(e.pointerId);updateJoy(e)});
+joy.addEventListener('pointermove',e=>{if(jActive){e.preventDefault();updateJoy(e)}});
+function joyEnd(){jActive=false;jx=jy=0;stick.style.transform='translate(0,0)'}
+joy.addEventListener('pointerup',joyEnd);joy.addEventListener('pointercancel',joyEnd);
+
+function getNearbyLadder(px,pz){
+ // Match the two rendered ladders on the front (+Z) face of each tower.
+ for(const o of walls){if(!o.tower)continue;
+  const ladderZ=o.z+o.d/2+.72;
+  if(Math.abs(px-o.x)<o.w*.34 && Math.abs(pz-ladderZ)<1.35) return o;
+ }
+ return null;
+}
+function collidesAtHeight(px,pz,feetY=0){
+ const r=.62;
+ for(const o of walls){
+  if(o.destroyed)continue;
+  // Once above a tower's roof, its footprint no longer blocks walking on the platform.
+  if(o.tower && feetY>=o.h-.1)continue;
+  const hw=o.w/2+r,hd=o.d/2+r;
+  if(Math.abs(px-o.x)<hw && Math.abs(pz-o.z)<hd) return true;
+ }
+ return false;
+}
+function collides(px,pz){
+  const r=.62;
+  for(const o of walls){
+   if(o.destroyed)continue;
+   const hw=o.w/2+r, hd=o.d/2+r;
+   if(Math.abs(px-o.x)<hw && Math.abs(pz-o.z)<hd) return true;
+  }
+  return false;
+ }
+function playerActorCollides(px,pz){
+ for(const group of [enemies,allies]) for(const other of group){
+  if(other.hp<=0||other.downed)continue;
+  const minDist=(other.boss?1.05:.78)+.48;
+  if(Math.hypot(px-other.x,pz-other.z)<minDist)return true;
+ }
+ return false;
+}
+function enemyCollides(mover,px,pz){
+ if(collides(px,pz))return true;
+ // Every living actor has a solid collision radius: enemies and allies can no longer walk through one another.
+ for(const group of [enemies,allies]) for(const other of group){
+  if(other===mover||other.hp<=0)continue;
+  const minDist=(mover.boss?1.05:.78)+(other.boss?1.05:.78);
+  if(Math.hypot(px-other.x,pz-other.z)<minDist)return true;
+ }
+ return false;
+}
+let lastAmmoText='',lastHp=-1,lastStamina=-1,lastSprintAlpha='',lastGunY=-1,lastGunR=-1,lastHpPercent=-1,lastStaminaPercent=-1;
+let reviveHeld=false;const reviveBtn=document.getElementById('reviveBtn');reviveBtn.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();reviveHeld=true;});['pointerup','pointercancel','pointerleave'].forEach(ev=>reviveBtn.addEventListener(ev,()=>{reviveHeld=false;reviveProgress=0;}));
+function update(dt){
+ if(!gameStarted||(hp<=0&&!(gameMode==='team'&&playerDowned))||document.getElementById('shopScreen').style.display==='flex')return;
+ if(gameMode==='team'){const pc=1+allies.filter(a=>a.hp>0&&!a.downed).length,cc=enemies.filter(e=>e.hp>0).length;const pe=document.getElementById('policeCount'),ce=document.getElementById('criminalCount');if(pe)pe.textContent=pc+' نفر';if(ce)ce.textContent=cc+' نفر';}
+ if(gameMode==='team'){for(const a of allies){if(a.downed){a.downTimer-=dt;let helper=null,hd=2.2;for(const mate of allies){if(mate!==a&&mate.hp>0&&!mate.downed){const md=Math.hypot(mate.x-a.x,mate.z-a.z);if(md<hd){hd=md;helper=mate;}}}if(helper){a.aiRevive=(a.aiRevive||0)+dt;if(a.aiRevive>=REVIVE_SECONDS){a.downed=false;a.hp=Math.round(a.maxHp*.55);a.downTimer=0;a.aiRevive=0;addKillFeed(helper.name||'ALLY',a.name+' revived','revive');sfx('revive');}}else a.aiRevive=0;if(a.downTimer<=0){a.hp=0;a.downed=false;a.dead=true;}}}if(playerDowned){playerDownTimer-=dt;if(playerDownTimer<=0){playerDowned=false;hp=0;const best=teamRoundsSurvived;let newRecord=false;if(round-1>best){teamRoundsSurvived=round-1;newRecord=true;try{localStorage.setItem('miniFpsTeamRounds',String(teamRoundsSurvived))}catch(_){}}document.getElementById('gameOverScreen').style.display='flex';const goTitle=document.querySelector('#gameOverCard h2');const goText=document.querySelector('#gameOverCard p');if(goTitle)goTitle.textContent=newRecord?'🏆 رکورد جدید!':'پایان بازی';if(goText)goText.textContent='تعداد راندهای کامل زنده‌مانده: '+(round-1)+' • رکورد قبلی: '+best+(newRecord?' • رکورد جدید ثبت شد!':'');}}const btn=document.getElementById('reviveBtn');let candidate=null,distBest=2.8;if(playerDowned){for(const a of allies){if(a.hp>0&&!a.downed){const d=Math.hypot(a.x-player.x,a.z-player.z);if(d<distBest){candidate=a;distBest=d;}}}}else{for(const a of allies){if(a.downed){const d=Math.hypot(a.x-player.x,a.z-player.z);if(d<distBest){candidate=a;distBest=d;}}}}if(candidate){btn.style.display='block';btn.textContent='REVIVE '+Math.ceil(reviveProgress)+' / 5s';if(reviveTarget!==candidate){reviveTarget=candidate;reviveProgress=0;}if(reviveHeld){reviveProgress+=dt;if(reviveProgress>=REVIVE_SECONDS){if(playerDowned){hp=55;playerDowned=false;playerDownTimer=0;lastDamageHp=55;playerHitFlash=0;document.getElementById('gameOverScreen').style.display='none';addKillFeed(candidate.name||'ALLY','REVIVED YOU','revive');sfx('revive');}else{candidate.downed=false;candidate.hp=Math.round(candidate.maxHp*.55);candidate.downTimer=0;addKillFeed(playerName||'PLAYER',candidate.name+' revived','revive');sfx('revive');}reviveProgress=0;reviveTarget=null;reviveHeld=false;}}}else{btn.style.display='none';reviveProgress=0;reviveTarget=null;reviveHeld=false;}}
+ // V18: render is the bottleneck, so camera input is now immediate.
+ // No multi-frame spring/smoothing = no delayed/ping feeling. The tiny power curve
+ // keeps the movement softer than a raw 1:1 mouse/finger response.
+ const inputX=lookDX,inputY=lookDY;
+ lookDX=0;lookDY=0;
+ // Linear, frame-batched camera input: no capped movement bursts or extra easing delay.
+ player.yaw+=inputX*(aimEnabled?.0052:.0072);
+ player.pitch-=inputY*(aimEnabled?.0042:.0058);
+ player.pitch=Math.max(-.9,Math.min(.9,player.pitch));
+ targetYaw=player.yaw;
+ targetPitch=player.pitch;
+ // Correct mapping: joystick up = forward, down = backward, right/left = strafe.
+ let forward=(playerDowned||hp<=0)?0:(-jy)+(keys.KeyW?1:0)-(keys.KeyS?1:0);
+ let strafe=(playerDowned||hp<=0)?0:jx+(keys.KeyD?1:0)-(keys.KeyA?1:0);
+ const len=Math.hypot(forward,strafe);if(len>1){forward/=len;strafe/=len}
+ const moving=Math.hypot(forward,strafe)>.08;
+ const wantsSprint=sprintHeld || keys.ShiftLeft || keys.ShiftRight;
+ const canSprint=wantsSprint && moving && stamina>0.5 && !crouchHeld;
+ const speed=crouchHeld?3.0:(canSprint?10.2:6.4);
+ if(canSprint) stamina=Math.max(0,stamina-dt*34);
+ else stamina=Math.min(100,stamina+dt*13);
+ const fx=Math.sin(player.yaw),fz=Math.cos(player.yaw);
+ const rx=Math.cos(player.yaw),rz=-Math.sin(player.yaw);
+ const desiredVX=(fx*forward+rx*strafe)*speed;
+ const desiredVZ=(fz*forward+rz*strafe)*speed;
+ // Direct, frame-scaled movement: no lingering momentum or ice-skating drift.
+ moveVX=desiredVX;moveVZ=desiredVZ;
+ const moveX=moveVX*dt,moveZ=moveVZ*dt;
+ // Solid world collision: walls and containers cannot be walked through.
+ const ladder=getNearbyLadder(player.x,player.z);
+ const wantsClimb=!!ladder && (forward>.18 || keys.KeyW) && !crouchHeld;
+ if(wantsClimb){
+  climbingTower=ladder;player.vy=0;
+  // Align to ladder and climb smoothly while pushing forward.
+  player.x += (ladder.x-player.x)*Math.min(1,dt*7);
+  player.z += ((ladder.z+ladder.d/2+.58)-player.z)*Math.min(1,dt*7);
+  player.y=Math.min(ladder.h+1.65,player.y+Math.max(0,forward)*4.1*dt);
+  // Keep the view level during the climb, then place the player safely on the tower roof.
+  player.pitch*=Math.max(0,1-dt*7);player.yaw=player.yaw;
+  if(player.y>=ladder.h+1.64){player.y=ladder.h+1.65;player.vy=0;climbingTower=ladder;player.z=ladder.z+ladder.d/2-1.25;player.x=ladder.x;player.pitch=0;}
+ }else if(climbingTower && player.y>climbingTower.h+1.6){
+  // Remain on the tower roof until walking off its footprint.
+  if(Math.abs(player.x-climbingTower.x)>climbingTower.w/2+1.0 || Math.abs(player.z-climbingTower.z)>climbingTower.d/2+1.0){climbingTower=null;}
+ }
+ if(!wantsClimb){
+  const feetY=player.y-1.65;
+  if(!collidesAtHeight(player.x+moveX,player.z,feetY)&&!playerActorCollides(player.x+moveX,player.z)) player.x+=moveX;else moveVX=0;
+  if(!collidesAtHeight(player.x,player.z+moveZ,feetY)&&!playerActorCollides(player.x,player.z+moveZ)) player.z+=moveZ;else moveVZ=0;
+  if(climbingTower && player.y>=climbingTower.h+1.6){player.y=climbingTower.h+1.65;player.vy=0;}
+  else {player.vy-=22*dt;player.y+=player.vy*dt;if(player.y<1.65){const wasFalling=player.vy< -2;player.y=1.65;player.vy=0;climbingTower=null;if(wasFalling)sfx('land');}}
+ }
+ player.x=Math.max(-50.0,Math.min(50.0,player.x));player.z=Math.max(-50.0,Math.min(50.0,player.z));
+ if(crouchHeld){
+  lastCoverCheck-=dt;
+  if(lastCoverCheck<=0){
+   lastCoverCheck=.12;let behindConcrete=false;
+   for(const o of walls){if(!o.barrier)continue;
+    const near=Math.hypot(player.x-o.x,player.z-o.z)<4.3;
+    if(near&&enemies.some(e=>e.hp>0&&segmentHitsRect(player.x,player.z,e.x,e.z,o)!==null)){behindConcrete=true;break;}
+   }
+   if(behindConcrete!==lastCoverState){lastCoverState=behindConcrete;const toast=document.getElementById('coverToast');toast.textContent=behindConcrete?'🛡️ پشت بتن پناه گرفتی':'🧎 در حالت نشسته‌ای';toast.style.opacity='1';}
+  }
+ }else{lastCoverCheck=0;lastCoverState=false;document.getElementById('coverToast').style.opacity='0';}
+ if(crouchHeld&&!lastCoverState){const toast=document.getElementById('coverToast');toast.textContent='🧎 در حالت نشسته‌ای';toast.style.opacity='1';}
+ if(firing&&!playerDowned&&hp>0)fire();
+ if(weapon.cool>0)weapon.cool-=dt;
+ if(weapon.reload>0){weapon.reload-=dt;if(weapon.reload<=0){const need=weapon.magSize-weapon.mag,got=Math.min(need,weapon.reserve);weapon.mag+=got;weapon.reserve-=got;weaponStates[currentWeaponId]={mag:weapon.mag,reserve:weapon.reserve}}}
+ weapon.recoil=Math.max(0,weapon.recoil-dt*12);weapon.flash=Math.max(0,weapon.flash-dt);
+ const gunY=weapon.recoil*7,gunR=weapon.recoil*0.8;
+ const stepBob=moving?Math.sin(performance.now()*.012)*(canSprint?4:2.2):0;
+ const sway=Math.sin(player.yaw*1.7)*1.2;
+ gunEl.style.transform=`translateX(${sway}px) rotate(7deg) scale(.94) translateY(${gunY+stepBob}px) rotateZ(${gunR+stepBob*.12}deg)`;
+ lastGunY=gunY;lastGunR=gunR;
+ flashEl.style.opacity=weapon.flash>0?1:0;
+ const ammoText=`${weapon.reload>0?'RELOADING':weapon.mag+' / '+weapon.reserve}`;
+ if(ammoText!==lastAmmoText){ammoEl.textContent=ammoText;lastAmmoText=ammoText;weaponStates[currentWeaponId]={mag:weapon.mag,reserve:weapon.reserve}}
+ const hpNow=Math.round(hp);
+ if(hpNow!==lastHp){hpEl.style.width=hpNow+'%';hpEl.style.background=hpNow<=25?'linear-gradient(90deg,#d91f32,#ff5b62)':'linear-gradient(90deg,#20d56b,#62ef83)';hpEl.style.boxShadow=hpNow<=25?'0 0 8px #ff293b99':'0 0 8px #32d96b66';lastHp=hpNow} if(hpNow!==lastHpPercent){document.getElementById('hpPercent').textContent=hpNow+'٪';lastHpPercent=hpNow}
+ const stNow=Math.round(stamina);
+ if(stNow!==lastStamina){staminaEl.style.width=stNow+'%';lastStamina=stNow} if(stNow!==lastStaminaPercent){document.getElementById('staminaPercent').textContent=stNow+'٪';lastStaminaPercent=stNow}
+ const sprintAlpha=canSprint?'1':(stamina<10?'0.55':'0.82');
+ if(sprintAlpha!==lastSprintAlpha){sprintBtn.style.opacity=sprintAlpha;lastSprintAlpha=sprintAlpha}
+ // Friendly squad AI: measured fire, distinct target choices, and spacing so allies spread out.
+ for(const a of allies){if(a.hp<=0||a.downed)continue;a.spawnFx=Math.max(0,(a.spawnFx||0)-dt);a.muzzleFx=Math.max(0,(a.muzzleFx||0)-dt);
+  let target=null,best=Infinity;
+  // If the player is down, a living squadmate prioritizes reaching them for manual revive.
+  const rescuePlayer=gameMode==='team'&&playerDowned&&Math.hypot(player.x-a.x,player.z-a.z)>1.65;
+  if(rescuePlayer){const dx=player.x-a.x,dz=player.z-a.z,d=Math.max(.001,Math.hypot(dx,dz));const vx=dx/d,vz=dz/d;const sp=3.6*dt;if(!enemyCollides(a,a.x+vx*sp,a.z))a.x+=vx*sp;if(!enemyCollides(a,a.x,a.z+vz*sp))a.z+=vz*sp;a.facingYaw=Math.atan2(dx,dz);a.cool=Math.max(a.cool,0.15);continue;}
+  for(const e of enemies){if(e.hp<=0)continue;const d=Math.hypot(e.x-a.x,e.z-a.z);if(blockedByWorld(a.x,a.z,e.x,e.z,1.4,e.boss?1.85:1.25))continue;
+   const alreadyAssigned=allies.reduce((n,other)=>n+(other!==a&&other.hp>0&&other.targetId===e.id?1:0),0);
+   const score=d+alreadyAssigned*8;
+   if(score<best){best=score;target=e;}
+  }
+  a.targetId=target?target.id:null;
+  const pd=Math.hypot(player.x-a.x,player.z-a.z);let desired=target?Math.atan2(target.x-a.x,target.z-a.z):Math.atan2(player.x-a.x,player.z-a.z);
+  let vx=0,vz=0;
+  if(target){
+   const dx=target.x-a.x,dz=target.z-a.z,d=Math.max(.001,Math.hypot(dx,dz));
+   const approach=d>a.preferredDist+1.5?.75:(d<a.preferredDist-1.5?-.28:0);
+   vx=(dx/d)*approach+(-dz/d)*a.strafeSign*.18;
+   vz=(dz/d)*approach+(dx/d)*a.strafeSign*.18;
+   // Repel nearby squadmates to prevent a single clumped-up firing line.
+   for(const other of allies){if(other===a||other.hp<=0)continue;const sx=a.x-other.x,sz=a.z-other.z,sd=Math.hypot(sx,sz);if(sd>0&&sd<3.8){const push=(3.8-sd)/3.8;vx+=(sx/sd)*push*.9;vz+=(sz/sd)*push*.9;}}
+   const vl=Math.hypot(vx,vz)||1;vx/=Math.max(1,vl);vz/=Math.max(1,vl);
+   const sp=1.75*dt;if(!enemyCollides(a,a.x+vx*sp,a.z))a.x+=vx*sp;if(!enemyCollides(a,a.x,a.z+vz*sp))a.z+=vz*sp;
+   // Allies still fight effectively, but no longer erase enemies before the player can act.
+   a.cool-=dt;if(a.cool<=0){target.hp=Math.max(0,target.hp-(target.boss?8:12));a.muzzleFx=.07;a.cool=.78+Math.random()*.35;if(target.hp<=0&&!target.dead){target.dead=true;score++;missionKills++;coins+=250;updateCoins();addKillFeed(a.name||'Jack','enemy','ally');sfx('kill');if(combatEffects.length<MAX_COMBAT_EFFECTS)combatEffects.push({kind:'kill',x:target.x,z:target.z,t:.5});}}
+  }else if(pd>5){
+   vx=(player.x-a.x)/(pd||1);vz=(player.z-a.z)/(pd||1);
+   for(const other of allies){if(other===a||other.hp<=0)continue;const sx=a.x-other.x,sz=a.z-other.z,sd=Math.hypot(sx,sz);if(sd>0&&sd<3.8){const push=(3.8-sd)/3.8;vx+=(sx/sd)*push;vz+=(sz/sd)*push;}}
+   const vl=Math.hypot(vx,vz)||1;vx/=Math.max(1,vl);vz/=Math.max(1,vl);const sp=1.55*dt;if(!enemyCollides(a,a.x+vx*sp,a.z))a.x+=vx*sp;if(!enemyCollides(a,a.x,a.z+vz*sp))a.z+=vz*sp;
+  }
+  const turn=((desired-(a.facingYaw??desired)+Math.PI*3)%(Math.PI*2))-Math.PI;a.facingYaw=(a.facingYaw??desired)+turn*Math.min(1,dt*3.4);
+ }
+ // Enemies actively advance toward the player and attack more aggressively.
+ let living=0;
+ for(const e of enemies){
+  if(e.hp<=0)continue;living++;
+  e.spawnFx=Math.max(0,(e.spawnFx||0)-dt);e.muzzleFx=Math.max(0,(e.muzzleFx||0)-dt);
+  const dx=player.x-e.x,dz=player.z-e.z,dist=Math.hypot(dx,dz);
+  const desiredYaw=Math.atan2(dx,dz);let turn=((desiredYaw-(e.facingYaw??desiredYaw)+Math.PI*3)%(Math.PI*2))-Math.PI;e.facingYaw=(e.facingYaw??desiredYaw)+turn*Math.min(1,dt*(e.role==='ranged'?3.6:5.2));
+  // Reloading enemies visibly pause in place. Each enemy has an independent magazine and reload timer.
+  if(!e.reloading && e.magAmmo<=0){
+   e.reloading=true;e.reloadTimer=(e.boss?1.8:1.65)+Math.random()*1.0;e.burstRemaining=0;e.burstTimer=0;
+  }
+  if(e.reloading){
+   e.reloadTimer-=dt;
+   if(e.reloadTimer<=0){e.reloading=false;e.magAmmo=e.magSize;e.cool=.22+Math.random()*.48;}
+   else {e.muzzleFx=0;continue;}
+  }
+  // Three of every five regular enemies push in; the remaining two hold long range and strafe.
+  const preferred=e.role==='ranged'?(e.preferredDist||19):(e.preferredDist||6);
+  let approach=dist>preferred+1.5?1:(dist<preferred-1.5?(e.role==='ranged'?-1:0):0);
+  let vx=(dx/(dist||1))*approach, vz=(dz/(dist||1))*approach;
+  const strafe=(e.strafeSign||1)*(e.role==='ranged'?.58:.30);
+  vx+=(-dz/(dist||1))*strafe;vz+=(dx/(dist||1))*strafe;
+  for(const group of [enemies,allies]) for(const other of group){if(other===e||other.hp<=0)continue;const sx=e.x-other.x,sz=e.z-other.z,sd=Math.hypot(sx,sz);if(sd>0&&sd<4.2){const push=(4.2-sd)/4.2;vx+=(sx/sd)*push*1.45;vz+=(sz/sd)*push*1.45;}}
+  const vlen=Math.hypot(vx,vz)||1;vx/=Math.max(1,vlen);vz/=Math.max(1,vlen);
+  const roundRage=1+Math.min(.75,(round-1)*.055);
+  const speed=(e.boss?2.35:(e.role==='ranged'?1.55:4.65))*(difficulty==='hard'?1.28:difficulty==='easy'?.98:1)*roundRage;
+  const mx=vx*speed*dt,mz=vz*speed*dt;
+  if(!enemyCollides(e,e.x+mx,e.z))e.x+=mx;if(!enemyCollides(e,e.x,e.z+mz))e.z+=mz;
+  let attackTarget={x:player.x,z:player.z,y:crouchHeld?.82:1.35,isPlayer:true};let targetDist=dist;for(const a of allies){if(a.hp<=0)continue;const ad=Math.hypot(a.x-e.x,a.z-e.z);if(ad<targetDist&&ad<42&&!blockedByWorld(e.x,e.z,a.x,a.z,1.45,1.25)){targetDist=ad;attackTarget={x:a.x,z:a.z,y:1.25,ally:a};}}
+  const hasLOS=targetDist<42&&!blockedByWorld(e.x,e.z,attackTarget.x,attackTarget.z,1.45,attackTarget.y);
+  // Ranged enemies try a side angle when cover blocks their shot instead of firing through it.
+  if(e.role==='ranged'&&!hasLOS){e.strafePhase=(e.strafePhase||0)+dt;e.strafeSign=(Math.sin(e.strafePhase*.7)>=0?1:-1);}
+  const cfg=difficultySettings[difficulty];
+  if(e.magAmmo>0){
+   e.cool-=dt;
+   if(e.cool<=0&&hasLOS){
+    e.muzzleFx=.095;
+    const tx=attackTarget.x,ty=attackTarget.y,tz=attackTarget.z,sx=e.x,sy=1.45,sz=e.z;
+    const len=Math.hypot(tx-sx,ty-sy,tz-sz)||1;
+    const v=25; // Keep projectile speed identical at short and long range.
+    if(enemyBullets.length<32)enemyBullets.push({x:sx,y:sy,z:sz,vx:(tx-sx)/len*v,vy:(ty-sy)/len*v,vz:(tz-sz)/len*v,damage:cfg.enemyDamage*(e.boss?1.55:1),life:20,targetAlly:!!attackTarget.ally,targetId:attackTarget.ally?.id});
+    if(performance.now()-lastEnemyShotSound>180){sfx('enemy');lastEnemyShotSound=performance.now();}
+    e.magAmmo--;
+    // Cadence is intentionally readable rather than a near-continuous stream.
+    const roundRage=Math.min(.32,(round-1)*.018);
+    e.cool=Math.max(.20,(e.role==='ranged'?.34:.29)+Math.random()*.13-roundRage);
+   }
+  }
+ }
+ // Player projectiles move quickly in a straight line and use swept collision to avoid skipping targets.
+ for(let i=playerBullets.length-1;i>=0;i--){
+  const b=playerBullets[i],ox=b.x,oy=b.y,oz=b.z;
+  b.x+=b.vx*dt;b.y+=b.vy*dt;b.z+=b.vz*dt;b.life-=dt;
+  // Barrels can be destroyed. Their blast can damage nearby enemies, but solid containers and concrete still stop rounds.
+  let barrelHit=null,barrelT=Infinity;
+  for(const o of walls){if(!o.barrel||o.destroyed)continue;const t=segmentHitsRect(ox,oz,b.x,b.z,o);if(t!==null&&t<barrelT){const hy=oy+(b.y-oy)*t;if(hy>=0&&hy<=o.h+.1){barrelHit=o;barrelT=t;}}}
+  if(barrelHit){barrelHit.hp=(barrelHit.hp??3)-1;playerBullets.splice(i,1);if(barrelHit.hp<=0){barrelHit.destroyed=true;sfx('hit');if(combatEffects.length<MAX_COMBAT_EFFECTS)combatEffects.push({kind:'kill',x:barrelHit.x,z:barrelHit.z,t:.5});for(const e of enemies){if(e.hp>0){const d=Math.hypot(e.x-barrelHit.x,e.z-barrelHit.z);if(d<4.5){e.hp=Math.max(0,e.hp-(1-d/4.5)*115);if(e.hp<=0&&!e.dead){e.dead=true;score++;missionKills++;if(gameMode==='team')document.getElementById('missionLabel').textContent='🤝 تیمی • حذف‌ها: '+missionKills;coins+=250;updateCoins();addKillFeed(playerName||'PLAYER','enemy','player');sfx('kill');}}}}if(Math.hypot(player.x-barrelHit.x,player.z-barrelHit.z)<3.2)hp=Math.max(1,hp-12);}continue;}
+  if(Math.abs(b.x)>BASE||Math.abs(b.z)>BASE||blockedByWorld(ox,oz,b.x,b.z,oy,b.y)){playerBullets.splice(i,1);continue;}
+  let hit=null,bestT=Infinity;
+  const sx=b.x-ox,sy=b.y-oy,sz=b.z-oz,den=sx*sx+sy*sy+sz*sz||1;
+  for(const e of enemies){
+   if(e.hp<=0)continue;
+   const tx=e.x-ox,ty=(e.boss?2.1:1.25)-oy,tz=e.z-oz;
+   const t=Math.max(0,Math.min(1,(tx*sx+ty*sy+tz*sz)/den));
+   const dx=ox+sx*t-e.x,dy=oy+sy*t-(e.boss?2.1:1.25),dz=oz+sz*t-e.z;
+   if(Math.hypot(dx,dz)<(e.boss?1.05:.62)&&Math.abs(dy)<(e.boss?2.2:1.1)&&t<bestT){hit=e;bestT=t;}
+  }
+  if(hit){
+   hit.hp=Math.max(0,hit.hp-(b.damage||weapon.damage));
+   if(combatEffects.length<MAX_COMBAT_EFFECTS)combatEffects.push({kind:'hit',x:hit.x,z:hit.z,t:.18});
+   if(hit.hp===0&&!hit.dead){hit.dead=true;score++;missionKills++;if(gameMode==='team')document.getElementById('missionLabel').textContent='🤝 تیمی • حذف‌ها: '+missionKills;coins+=250;updateCoins();addKillFeed(playerName||'PLAYER','enemy','player');sfx('kill');hit.cool=999999;if(combatEffects.length<MAX_COMBAT_EFFECTS)combatEffects.push({kind:'kill',x:hit.x,z:hit.z,t:.5});}
+   playerBullets.splice(i,1);
+  }
+ }
+ // Enemy rounds travel through the arena. A jump can evade shots aimed at chest height.
+ for(let i=enemyBullets.length-1;i>=0;i--){
+  const b=enemyBullets[i],oldX=b.x,oldY=b.y,oldZ=b.z;
+  b.x+=b.vx*dt;b.y+=b.vy*dt;b.z+=b.vz*dt;b.life-=dt;
+  const pd=Math.hypot(player.x-b.x,player.z-b.z);
+  if(pd<.72&&b.y>.18&&b.y<(crouchHeld?1.12:1.78)){
+   hp=Math.max(0,hp-b.damage);if(hp<=0&&gameMode==='team'&&!playerDowned){playerDowned=true;playerDownTimer=DOWN_SECONDS;playerReviveProgress=0;sfx('down');}playerHitFlash=.18;if(hp<lastDamageHp){sfx('hit');lastDamageHp=hp;}enemyBullets.splice(i,1);continue;
+  }
+  let allyHit=null;for(const a of allies){if(a.hp<=0)continue;if(Math.hypot(a.x-b.x,a.z-b.z)<.7&&b.y>.18&&b.y<2.0){allyHit=a;break;}}
+  if(allyHit){allyHit.hp=Math.max(0,allyHit.hp-b.damage*1.55);if(allyHit.hp<=0&&!allyHit.downed){allyHit.hp=0.01;allyHit.downed=true;allyHit.downTimer=DOWN_SECONDS;addKillFeed(allyHit.name||'Ally','down','down');sfx('down');}enemyBullets.splice(i,1);continue;}
+  if(Math.abs(b.x)>BASE||Math.abs(b.z)>BASE){enemyBullets.splice(i,1);continue;}
+  // Remove rounds that run into a solid wall between their previous and current position.
+  if(blockedByWorld(oldX,oldZ,b.x,b.z,oldY,b.y)){enemyBullets.splice(i,1);continue;}
+ }
+ playerHitFlash=Math.max(0,playerHitFlash-dt);
+ for(let i=combatEffects.length-1;i>=0;i--){combatEffects[i].t-=dt;if(combatEffects[i].t<=0)combatEffects.splice(i,1)}
+
+ if(gameMode==='team'&&gameStarted&&!roundTransition){const livingEnemies=enemies.filter(e=>e.hp>0).length;if(livingEnemies===0){gameWon=true;roundTransition=true;enemyBullets.length=0;playerBullets.length=0;document.getElementById('roundScreen').style.display='flex';sfx('victory');document.getElementById('roundTitle').textContent='🏆 پلیس‌ها پیروز شدند!';document.getElementById('roundText').textContent='راند '+round+' تمام شد؛ همهٔ '+configuredEnemyCount+' انمی حذف شدند! حذف‌ها: '+missionKills+' • یارهای زنده: '+allies.filter(a=>a.hp>0).length+'؛ برای راند بعدی آماده شو.';document.getElementById('continueRound').textContent='شروع راند بعدی';}else{teamTimeLeft=Math.max(0,teamTimeLeft-dt);document.getElementById('roundLabel').textContent=formatTeamTime(teamTimeLeft);if(teamTimeLeft<=0){gameWon=true;roundTransition=true;document.getElementById('roundScreen').style.display='flex';sfx('victory');document.getElementById('roundTitle').textContent='🏆 راند '+round+' را بردی!';document.getElementById('roundText').textContent='زمان تیمی تمام شد و دوام آوردی. حذف‌ها: '+missionKills+' • یارهای زنده: '+allies.filter(a=>a.hp>0).length+'؛ راند بعدی آماده است.';document.getElementById('continueRound').textContent='شروع راند بعدی';}}}
+ if(gameMode==='solo'&&living===0&&!roundTransition){lastDamageHp=100;hp=100;playerHitFlash=0;enemyBullets.length=0;playerBullets.length=0;roundTransition=true;document.getElementById('roundScreen').style.display='flex';if(bossAlive){gameWon=true;sfx('victory');intermission=0;document.getElementById('roundTitle').textContent='🏆 پیروزی! باس شکست خورد';document.getElementById('roundText').textContent='تبریک! باس را شکست دادی و بازی را تمام کردی.';document.getElementById('continueRound').textContent='بازگشت به منو';}else{sfx('round');intermission=5;document.getElementById('roundTitle').textContent='راند '+round+' تمام شد!';document.getElementById('roundText').textContent='راند بعدی تا ۵ ثانیهٔ دیگر شروع می‌شود.';document.getElementById('continueRound').textContent='شروع راند بعدی';}}
+ if(gameMode==='solo'&&roundTransition&&!gameWon){intermission-=dt;document.getElementById('roundText').textContent='راند بعدی تا '+Math.max(0,Math.ceil(intermission))+' ثانیهٔ دیگر شروع می‌شود.';if(intermission<=0){document.getElementById('roundScreen').style.display='none';roundTransition=false;round++;spawnRound(round);}}
+}
+function drawBarrierDetails(o){
+ // Faceted highway Jersey barrier with bevel highlights, segmented reflective tape and concrete wear.
+ const a=project(o.x-o.w/2,.08,o.z-o.d/2),
+       b=project(o.x+o.w/2,.08,o.z-o.d/2),
+       c=project(o.x+o.w*.38,o.h,o.z-o.d*.18),
+       d=project(o.x-o.w*.38,o.h,o.z-o.d*.18);
+ if(!(a&&b&&c&&d))return;
+ ctx.fillStyle='#d0d1c9';ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.lineTo(c.x,c.y);ctx.lineTo(d.x,d.y);ctx.closePath();ctx.fill();
+ ctx.strokeStyle='#f0f0e8';ctx.lineWidth=Math.max(1,Math.min(3,a.s*.035));ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(d.x,d.y);ctx.lineTo(c.x,c.y);ctx.stroke();
+ ctx.strokeStyle='#777f7d';ctx.lineWidth=Math.max(1,Math.min(3,a.s*.04));ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.lineTo(c.x,c.y);ctx.stroke();
+ const mix=(p,q,t)=>({x:p.x+(q.x-p.x)*t,y:p.y+(q.y-p.y)*t});
+ // Yellow/white segmented highway reflector band placed across the sloped face.
+ const l=mix(a,d,.48),r=mix(b,c,.48);
+ const segs=8;
+ for(let i=0;i<segs;i++){
+  const t0=i/segs,t1=(i+1)/segs;
+  const p=mix(l,r,t0),q=mix(l,r,t1);
+  ctx.strokeStyle=i%2===0?'#f2cf55':'#ecece2';
+  ctx.lineWidth=Math.max(2,Math.min(6,a.s*.085));
+  ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.stroke();
+ }
+ // Fine casting seams and subtle chips, kept lightweight (no blur filters).
+ for(const t of [.22,.78]){
+  const p=mix(a,d,t),q=mix(b,c,t);
+  ctx.strokeStyle='#737a78a8';ctx.lineWidth=Math.max(1,Math.min(2,a.s*.025));
+  ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.stroke();
+ }
+ const chips=[[.18,.72,.035],[.66,.26,.028],[.83,.8,.022]];
+ for(const [tx,ty,size] of chips){
+  const left=mix(a,d,ty),right=mix(b,c,ty),pt=mix(left,right,tx);
+  ctx.fillStyle='#777f7d99';ctx.beginPath();ctx.ellipse(pt.x,pt.y,Math.max(1,Math.abs(b.x-a.x)*size),Math.max(1,Math.abs(b.y-a.y)*size+1),-.2,0,Math.PI*2);ctx.fill();
+ }
+}
+function drawTowerLadder(o){
+ // Keep ladder rails/rungs clipped to the tower's front-face silhouette.
+ const z=o.z+o.d/2+.09, faceZ=o.z+o.d/2+.015, x0=o.x-o.w*.22, x1=o.x+o.w*.22;
+ const a=project(x0,.05,z),b=project(x1,.05,z),c=project(x0,o.h-.2,z),d=project(x1,o.h-.2,z);
+ const f1=project(o.x-o.w/2,0,faceZ),f2=project(o.x+o.w/2,0,faceZ),f3=project(o.x+o.w/2,o.h,faceZ),f4=project(o.x-o.w/2,o.h,faceZ);
+ if(!a||!b||!c||!d||!f1||!f2||!f3||!f4)return;
+ ctx.save();ctx.beginPath();ctx.moveTo(f1.x,f1.y);ctx.lineTo(f2.x,f2.y);ctx.lineTo(f3.x,f3.y);ctx.lineTo(f4.x,f4.y);ctx.closePath();ctx.clip();
+ ctx.lineCap='round';ctx.strokeStyle='#202b32';ctx.lineWidth=Math.max(2,Math.min(7,a.s*.12));
+ for(const p of [[a,c],[b,d]]){ctx.beginPath();ctx.moveTo(p[0].x,p[0].y);ctx.lineTo(p[1].x,p[1].y);ctx.stroke();}
+ ctx.strokeStyle='#b9c4c9';ctx.lineWidth=Math.max(1,Math.min(4,a.s*.065));
+ for(let i=1;i<9;i++){const t=i/9;ctx.beginPath();ctx.moveTo(a.x+(c.x-a.x)*t,a.y+(c.y-a.y)*t);ctx.lineTo(b.x+(d.x-b.x)*t,b.y+(d.y-b.y)*t);ctx.stroke();}ctx.restore();
+}
+function drawBarrel(o){
+ if(o.destroyed)return;
+ // Lightweight world-space cylinder: projected side strips plus elliptical rims.
+ const n=10,rx=o.w*.47,rz=o.d*.47,h=o.h,top=[],bottom=[];
+ for(let i=0;i<n;i++){
+  const a=(i/n)*Math.PI*2;
+  top.push(project(o.x+Math.cos(a)*rx,h,o.z+Math.sin(a)*rz));
+  bottom.push(project(o.x+Math.cos(a)*rx,.04,o.z+Math.sin(a)*rz));
+ }
+ for(let i=0;i<n;i++){
+  const j=(i+1)%n,a=top[i],b=top[j],c=bottom[j],d=bottom[i];
+  if(!a||!b||!c||!d)continue;
+  const shadeVal=.72+.28*Math.max(0,Math.cos((i/n)*Math.PI*2));
+  const col=`rgb(${Math.round(195*shadeVal)},${Math.round(70*shadeVal)},${Math.round(48*shadeVal)})`;
+  ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.lineTo(c.x,c.y);ctx.lineTo(d.x,d.y);ctx.closePath();ctx.fill();
+ }
+ const drawRim=(pts,fill,stroke)=>{if(pts.some(p=>!p))return;ctx.fillStyle=fill;ctx.strokeStyle=stroke;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i].x,pts[i].y);ctx.closePath();ctx.fill();ctx.stroke()};
+ drawRim(top,'#d66a4b','#6e3025');drawRim(bottom,'#783126','#3d211c');
+ // Two narrow steel bands.
+ for(const yy of [.38,.98]){const band=[];for(let i=0;i<n;i++){const a=(i/n)*Math.PI*2;band.push(project(o.x+Math.cos(a)*rx*1.012,yy,o.z+Math.sin(a)*rz*1.012));}if(!band.some(p=>!p)){ctx.strokeStyle='#e6b7a1';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(band[0].x,band[0].y);for(let i=1;i<n;i++)ctx.lineTo(band[i].x,band[i].y);ctx.closePath();ctx.stroke();}}
+}
+let bgCacheKey='',bgSky=null,bgGround=null;
+let floorDetailFrame=0;
+const actorOrderCache=[];
+function draw(){
+ ctx.clearRect(0,0,W,H);
+ // Cheap mobile background: gradients were rebuilt every frame and were a major source
+ // of frame-time spikes on phones. Solid fills keep the same clear horizon without the lag.
+ const f=Math.min(W,H)*.9*(aimEnabled?1.28:1);
+ const horizon=H/2+Math.tan(player.pitch)*f;
+ const hy=Math.max(0,Math.min(H,horizon));
+ const bgKey=W+'x'+H+':'+Math.round(hy/6)*6;
+ if(bgKey!==bgCacheKey){bgCacheKey=bgKey;bgSky=ctx.createLinearGradient(0,0,0,Math.max(1,hy));bgSky.addColorStop(0,'#83b9df');bgSky.addColorStop(1,'#e5edf0');bgGround=ctx.createLinearGradient(0,hy,0,H);bgGround.addColorStop(0,'#737c7d');bgGround.addColorStop(1,'#424b4e');}
+ ctx.fillStyle=bgSky;ctx.fillRect(0,0,W,hy);ctx.fillStyle=bgGround;ctx.fillRect(0,hy,W,H-hy);
+ // Decorative floor markings update every other frame to reduce mobile canvas work.
+ floorDetailFrame++;if(floorDetailFrame%3===0){
+  for(let gx=-36;gx<=36;gx+=9){const a=project(gx,0,player.z-8),b=project(gx,0,player.z-38);if(a&&b){ctx.strokeStyle='#d4e0df18';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();}}
+  for(let d=12;d<40;d+=12){const a=project(-BASE+1,0,player.z-d),b=project(BASE-1,0,player.z-d);if(a&&b){ctx.strokeStyle='#ffffff16';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke()}}
+ }
+ drawBarbedFence();
+ // Stable painter order follows camera-space depth so moving/turning cannot reuse a stale order.
+ refreshWallOrder();
+ // Only world-anchored cover and enemy contact shadows are drawn; no extra circular map shadows.
+ for(let i=0;i<wallOrder.length;i++){
+  const o=wallOrder[i].o;
+  if(!o.fence&&!o.destroyed&&((o.x-player.x)*(o.x-player.x)+(o.z-player.z)*(o.z-player.z)<900)){const sh=project(o.x,.018,o.z);
+   if(sh){ctx.fillStyle='#10171d4d';ctx.beginPath();ctx.ellipse(sh.x+Math.max(1,sh.s*.035),sh.y+Math.max(1,sh.s*.02),Math.max(2,sh.s*(o.w*.43+o.d*.16)),Math.max(1.5,sh.s*(o.d*.13)+1),0,0,Math.PI*2);ctx.fill();}}
+  if(o.destroyed)continue; if(o.barrel)drawBarrel(o);else rect3D(o);
+  if(o.barrier)drawBarrierDetails(o);if(o.tower)drawTowerLadder(o);
+ }
+ // Draw all actors together from far to near. This prevents the far-side character from painting over a nearer one.
+ const actorOrder=actorOrderCache;actorOrder.length=0;for(let i=0;i<enemies.length;i++){const a=enemies[i];if(a.hp>0)actorOrder.push({a,z:worldToCamera(a.x,1,a.z).z});}for(let i=0;i<allies.length;i++){const a=allies[i];if(a.hp>0)actorOrder.push({a,z:worldToCamera(a.x,1,a.z).z});}actorOrder.sort((a,b)=>b.z-a.z);for(let i=0;i<actorOrder.length;i++)enemyDraw(actorOrder[i].a);
+ // Player rounds: bright short streaks show travel from the weapon, not instant hits.
+ for(const b of playerBullets){const a=project(b.x-b.vx*.012,b.y-b.vy*.012,b.z-b.vz*.012),q=project(b.x,b.y,b.z);if(a&&q){ctx.strokeStyle=b.color||'#fff0a0';ctx.lineWidth=currentWeaponId==='sniper'?3.2:2.2;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(q.x,q.y);ctx.stroke();}}
+ // Draw compact enemy bullet streaks; no blur-heavy effects on mobile.
+ for(const b of enemyBullets){const a=project(b.x-b.vx*.018,b.y-b.vy*.018,b.z-b.vz*.018),q=project(b.x,b.y,b.z);if(a&&q){ctx.strokeStyle='#ffd56a';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(q.x,q.y);ctx.stroke();}}
+ // Short-lived muzzle tracers and hit sparks make every shot readable.
+ for(const fx of combatEffects){ctx.save();const alpha=Math.max(0,Math.min(1,fx.t/(fx.kind==='shot'?.16:fx.kind==='kill'?.5:.18)));if(fx.kind==='shot'){const a=project(fx.x1,fx.y1??1.45,fx.z1),b=project(fx.x2,fx.y2??1.25,fx.z2);if(a&&b){ctx.globalAlpha=alpha*.8;ctx.strokeStyle='#ffdc78';ctx.lineWidth=2;ctx.shadowBlur=0;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke()}}else{const a=project(fx.x,.9,fx.z);if(a){ctx.globalAlpha=alpha;ctx.strokeStyle=fx.kind==='kill'?'#ffd45c':'#ff604d';ctx.lineWidth=3;ctx.beginPath();ctx.arc(a.x,a.y,Math.max(5,a.s*(fx.kind==='kill'?.4:.2)),0,Math.PI*2);ctx.stroke()}}ctx.restore()}
+ if(playerHitFlash>0){ctx.fillStyle=`rgba(255,25,35,${Math.min(.22,playerHitFlash*1.2)})`;ctx.fillRect(0,0,W,H)}
+ if(hp<=0&&gameStarted&&!playerDowned){document.getElementById('shopScreen').style.display='none';document.getElementById('roundScreen').style.display='none';document.getElementById('gameOverScreen').style.display='flex';ctx.fillStyle='#0008';ctx.fillRect(0,0,W,H)}
+}
+let last=performance.now();function loop(t){
+ const raw=(t-last)/1000;last=t;
+ const dt=Math.min(.06,Math.max(0,raw));
+ update(dt);draw();requestAnimationFrame(loop)
+}loop(last);
+</script>
+<div id="ladderHint" style="position:fixed;left:18px;bottom:24%;z-index:15;background:#102231d9;color:#fff;border:1px solid #72d7ff;border-radius:10px;padding:8px 12px;font:600 13px sans-serif;display:none;pointer-events:none">🪜 برای بالا رفتن، به نردبان نزدیک شو و جوی‌استیک را رو به جلو نگه دار</div>
+<script>setInterval(()=>{const h=document.getElementById("ladderHint");if(h&&typeof player!=="undefined"&&typeof getNearbyLadder==="function"&&typeof gameStarted!=="undefined")h.style.display=gameStarted&&getNearbyLadder(player.x,player.z)?"block":"none";},180);</script>
+</body>
+</html>
