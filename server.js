@@ -28,8 +28,9 @@ function leaveRoom(socket, room) {
   io.to(room.code).emit('player:left',{id:socket.id}); emitRoom(room);
   if(room.players.size===0) rooms.delete(room.code);
 }
-app.get('/',(_,res)=>res.json({name:'MINI FPS online server',status:'ok',players:[...rooms.values()].reduce((n,r)=>n+r.players.size,0),rooms:rooms.size}));
-app.get('/health',(_,res)=>res.json({ok:true,uptime:Math.round(process.uptime())}));
+app.get('/health',(_,res)=>res.json({name:'MINI FPS online server',ok:true,status:'ok',players:[...rooms.values()].reduce((n,r)=>n+r.players.size,0),rooms:rooms.size,uptime:Math.round(process.uptime())}));
+// Serve the actual game at the public Render URL instead of returning only server status.
+app.get('/',(_,res)=>res.sendFile(path.join(__dirname,'mini_fps_online.html')));
 io.on('connection', socket => {
   socket.emit('server:hello',{name:'MINI FPS',maxPlayers:MAX_PLAYERS});
   socket.on('room:create',(data={})=>{ const room=makeRoom(false); joinRoom(socket,room,data.name); });
@@ -44,7 +45,7 @@ io.on('connection', socket => {
     for(const k of ['x','y','z','yaw','hp']) if(Number.isFinite(Number(state[k]))) p[k]=Math.max(k==='hp'?0:-10000,Math.min(k==='hp'?100:10000,Number(state[k])));
     io.to(room.code).volatile.emit('player:state',{id:socket.id,x:p.x,y:p.y,z:p.z,yaw:p.yaw,hp:p.hp});
   });
-  socket.on('game:event',(event={})=>{const room=rooms.get(socket.data.room);if(!room)return; const type=String(event.type||'').slice(0,24); if(!['fire','hit','down','revive','reload'].includes(type))return; socket.to(room.code).emit('game:event',{id:socket.id,type,x:Number(event.x)||0,y:Number(event.y)||0,z:Number(event.z)||0,target:String(event.target||'').slice(0,16)});});
+  socket.on('game:event',(event={})=>{const room=rooms.get(socket.data.room);if(!room)return; const type=String(event.type||'').slice(0,24); if(!['fire','hit','down','revive','reload'].includes(type))return; socket.to(room.code).emit('game:event',{id:socket.id,type,x:Number(event.x)||0,y:Number(event.y)||0,z:Number(event.z)||0,yaw:Number.isFinite(Number(event.yaw))?Number(event.yaw):0,target:String(event.target||'').slice(0,32),weapon:String(event.weapon||'rifle').slice(0,12)});});
   socket.on('room:leave',()=>{const room=rooms.get(socket.data.room);if(room)leaveRoom(socket,room);});
   socket.on('disconnect',()=>{const room=rooms.get(socket.data.room);if(room)leaveRoom(socket,room);});
 });
