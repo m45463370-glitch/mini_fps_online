@@ -103,6 +103,24 @@ button{min-width:82px;min-height:55px;border:1px solid #ffffff3b;border-radius:1
 #sprint{min-width:0;width:50%}
 @media(max-width:520px){#gun{right:24px;bottom:-28px;width:min(310px,62vw)}#flash{width:35px;height:35px}#status{width:min(330px,64vw)}#buttons{right:12px;bottom:22px}#movementRow button{min-height:39px;font-size:11px}}
 @media(pointer:fine){#joystick,#buttons{display:none}}
+
+/* MINI FPS V76 — online lobby designer preview (not connected yet) */
+#onlineOpen{width:100%;margin-top:8px;background:linear-gradient(135deg,#176b55,#123c4d);border:1px solid #53e6b4;color:#eafff8;box-shadow:0 5px 18px #00d9a51c}
+#onlineDesigner{position:fixed;inset:0;z-index:30;display:none;align-items:center;justify-content:center;padding:12px;background:#03070de8;touch-action:manipulation;overflow:auto}
+#onlineCard{width:min(460px,100%);max-height:calc(100dvh - 24px);overflow-y:auto;border:1px solid #3e6475;border-radius:18px;padding:12px;background:radial-gradient(ellipse at 90% 0%,#16475a 0,transparent 45%),linear-gradient(145deg,#15232e,#080e16 75%);box-shadow:0 20px 65px #000b}
+#onlineCard *{box-sizing:border-box}#onlineHead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}#onlineHead h2{font-size:20px;margin:0;letter-spacing:.4px}#onlineClose{width:42px;min-width:42px;padding:0;background:#263744;border:1px solid #526b7a;font-size:20px}
+#onlineSub{font-size:11px;color:#b5c8d4;margin:4px 0 8px;line-height:1.6}
+#onlineBadge{display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border-radius:99px;border:1px solid #bd984e;background:#332a18;color:#ffdc8b;font-size:11px;font-weight:900;margin-bottom:12px}
+#onlineBadge:before{content:"";width:7px;height:7px;border-radius:50%;background:#ffc65c;box-shadow:0 0 8px #ffc65c}
+.onlineGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.onlineTile{min-width:0;text-align:right;border:1px solid #345264;border-radius:13px;background:#0c1721;padding:9px}.onlineTile h3{font-size:14px;margin:0 0 4px}.onlineTile p{font-size:10px;line-height:1.5;color:#a9bdca;margin:0 0 7px;min-height:30px}
+#onlineCard button,#onlineCard input{font:inherit}#onlineCard button{min-height:38px;border-radius:10px;padding:7px 9px;font-weight:900;cursor:pointer}#findPublic{width:100%;background:linear-gradient(135deg,#d9ff82,#82e4a3);color:#11251c;border:0}#createRoom{width:100%;background:linear-gradient(135deg,#49c8ff,#427df6);color:white;border:0}
+#joinCode{width:100%;min-width:0;padding:11px;border-radius:10px;border:1px solid #476879;background:#07111a;color:white;margin:7px 0;font-size:17px;letter-spacing:3px;text-align:center;text-transform:uppercase;outline-offset:2px}
+#joinRoom{width:100%;background:#243d4a;color:#e6f8ff;border:1px solid #4b8297}
+#roomCodeBox{display:none;margin-top:8px;padding:8px;border-radius:12px;background:#07131b;border:1px dashed #50d6bd;text-align:center}#roomCodeValue{font-size:27px;letter-spacing:5px;font-weight:1000;color:#7bf2d3;margin:5px 0}
+#onlineStatus{margin-top:8px;padding:8px 10px;border-radius:12px;background:#101d28;border:1px solid #344a59;color:#d0e3ed;font-size:12px;line-height:1.7}#onlineStatus strong{color:#fff}#previewPlayers{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}.previewPlayer{display:flex;align-items:center;gap:6px;padding:7px 9px;background:#0a151e;border:1px solid #2c4554;border-radius:99px;font-size:11px;color:#b8cad4}.previewPlayer i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#7b8791}.previewPlayer.you i{background:#61e4a8}
+#onlineFoot{font-size:9px;color:#8299a7;line-height:1.5;margin:7px 2px 0}
+@media(max-width:390px){#onlineCard{padding:12px}.onlineGrid{grid-template-columns:1fr}.onlineTile p{min-height:0}#onlineHead h2{font-size:20px}}
+
 </style>
 </head>
 <body>
@@ -229,6 +247,7 @@ button{min-width:82px;min-height:55px;border:1px solid #ffffff3b;border-radius:1
     <label for="modePick" style="display:block;text-align:right;font-size:13px;font-weight:900;margin-bottom:4px">🎮 حالت بازی</label>
     <select id="modePick" aria-label="انتخاب حالت بازی"><option value="solo">تک‌نفره — تا باس‌فایت</option><option value="team">تیمی — مبارزه زمان‌دار</option></select>
     <button id="startGame" type="button">شروع بازی</button>
+    <button id="onlineOpen" type="button">🌐 بازی آنلاین · لابی جدید</button>
   </div>
   <div id="nameModal" role="dialog" aria-modal="true" aria-labelledby="nameTitle"><div id="nameCard"><h2 id="nameTitle">👤 خوش اومدی!</h2><p>برای اولین ورود، یک نام برای بازیکنت انتخاب کن. این نام در مرورگر ذخیره می‌شه و در پیام‌های کیل نمایش داده می‌شه.</p><form id="nameForm"><input id="playerNameInput" type="text" maxlength="16" autocomplete="nickname" placeholder="مثلاً Mani" aria-label="نام بازیکن"><div id="nameError" role="status"></div><button id="savePlayerName" type="submit">ذخیره و ادامه</button></form></div></div>
   <div id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
@@ -250,6 +269,23 @@ button{min-width:82px;min-height:55px;border:1px solid #ffffff3b;border-radius:1
     </div>
   </div>
 </div>
+
+<div id="onlineDesigner" role="dialog" aria-modal="true" aria-labelledby="onlineTitle">
+ <section id="onlineCard">
+  <div id="onlineHead"><h2 id="onlineTitle">🌐 MINI FPS ONLINE</h2><button id="onlineClose" type="button" aria-label="بستن">✕</button></div>
+  <p id="onlineSub">اتصال واقعی لابی به سرور آنلاین</p>
+  <div id="onlineBadge">در حال بررسی اتصال سرور…</div>
+  <div class="onlineGrid">
+   <div class="onlineTile"><h3>⚡ بازی عمومی</h3><p>ورود به صف و پیدا کردن بازیکن‌های آنلاین.</p><button id="findPublic" type="button">پیدا کردن بازی</button></div>
+   <div class="onlineTile"><h3>🔐 اتاق خصوصی</h3><p>اتاق بساز و کد ۵ حرفی/رقمی را برای دوستت بفرست.</p><button id="createRoom" type="button">ساخت اتاق</button><input id="joinCode" maxlength="5" autocomplete="off" placeholder="کد ۵ کاراکتری" aria-label="کد اتاق"><button id="joinRoom" type="button">ورود با کد</button></div>
+  </div>
+  <div id="roomCodeBox"><div style="font-size:10px;color:#a9c6d2">کد اتاق واقعی</div><div id="roomCodeValue">-----</div><div style="font-size:10px;color:#a9c6d2">دوستت باید همین کد را وارد کند.</div></div>
+  <div id="onlineStatus" role="status" aria-live="polite"><strong>وضعیت:</strong> در حال اتصال به سرور…</div>
+  <div id="previewPlayers" aria-live="polite"><span class="previewPlayer you"><i></i>تو · <span id="previewName">بازیکن</span></span></div>
+  <p id="onlineFoot">اتاق‌ها و همگام‌سازی موقعیت بازیکن‌ها فعال شده؛ همگام‌سازی آسیب و نتیجهٔ مبارزه هنوز کامل نیست.</p>
+ </section>
+</div>
+
 <div id="gameOverScreen"><div id="gameOverCard"><h2>💀 بازی تمام شد!</h2><p>سلامتی‌ات به صفر رسید. می‌تونی از منوی اول دوباره شروع کنی.</p><button id="goRestart" type="button">شروع مجدد</button></div></div>
 <script>
 const c=document.getElementById('c'),ctx=c.getContext('2d');
@@ -283,6 +319,8 @@ let moveVX=0,moveVZ=0;
 let climbingTower=null;
 const enemies=[];
 const allies=[];
+// Online remote avatars: positions are synchronized through the existing Socket.IO room.
+const remotePlayers=new Map();
 let round=1,coins=0,intermission=0,roundTransition=false,bossAlive=false,gameWon=false;let teamRoundsSurvived=0;try{teamRoundsSurvived=Number(localStorage.getItem('miniFpsTeamRounds')||0)||0}catch(_){teamRoundsSurvived=0}
 let nextEnemyId=1;
 const combatEffects=[];
@@ -713,6 +751,7 @@ function rayHit(){
 }
 const allyNames=['Jack','Noah','Liam','Ethan','Lucas','Mason'];const killFeedEl=document.getElementById('killFeed');function addKillFeed(killer,target,kind='kill'){if(!killFeedEl)return;const row=document.createElement('div');row.style.cssText='background:#07111de8;border:1px solid #ffffff20;border-radius:5px;padding:3px 5px;animation:feedIn .15s ease-out;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;box-sizing:border-box';row.innerHTML=`<span style="color:${'#8de0ff'}">${String(killer).toUpperCase()}</span> <span style="color:#fff">KILLED</span> <span style="color:#ff7777">${String(target==='enemy'?'ENEMY':target).toUpperCase()}</span>`;killFeedEl.prepend(row);while(killFeedEl.children.length>4)killFeedEl.lastElementChild.remove();setTimeout(()=>row.remove(),3500);}
 function fire(){
+ if(typeof window.__miniFpsOnlineFire==='function')window.__miniFpsOnlineFire(currentWeaponId);
  if(playerDowned||hp<=0)return;
  if(currentWeaponId==='knife'){if(weapon.cool>0)return;weapon.cool=.52;const reach=2.25;let target=null,bd=reach;for(const e of enemies){if(e.hp<=0)continue;const dx=e.x-player.x,dz=e.z-player.z,d=Math.hypot(dx,dz);if(d<bd&&d>0.01){const yaw=Math.atan2(dx,dz),diff=Math.abs(Math.atan2(Math.sin(yaw-player.yaw),Math.cos(yaw-player.yaw)));if(diff<.72&&!blockedByWorld(player.x,player.z,e.x,e.z,1.2,1.2)){target=e;bd=d;}}}if(target){target.hp=Math.max(0,target.hp-50);if(combatEffects.length<MAX_COMBAT_EFFECTS)combatEffects.push({kind:'hit',x:target.x,z:target.z,t:.18});if(target.hp<=0&&!target.dead){target.dead=true;score++;missionKills++;coins+=250;updateCoins();addKillFeed(playerName||'PLAYER','enemy','player');sfx('kill');}else addKillFeed(playerName||'PLAYER','enemy','hit');}return;}
  if(weapon.reload>0||weapon.cool>0)return;
@@ -1131,7 +1170,7 @@ function draw(){
   if(o.barrier)drawBarrierDetails(o);if(o.tower)drawTowerLadder(o);
  }
  // Draw all actors together from far to near. This prevents the far-side character from painting over a nearer one.
- const actorOrder=actorOrderCache;actorOrder.length=0;for(let i=0;i<enemies.length;i++){const a=enemies[i];if(a.hp>0)actorOrder.push({a,z:worldToCamera(a.x,1,a.z).z});}for(let i=0;i<allies.length;i++){const a=allies[i];if(a.hp>0)actorOrder.push({a,z:worldToCamera(a.x,1,a.z).z});}actorOrder.sort((a,b)=>b.z-a.z);for(let i=0;i<actorOrder.length;i++)enemyDraw(actorOrder[i].a);
+ const actorOrder=actorOrderCache;actorOrder.length=0;for(let i=0;i<enemies.length;i++){const a=enemies[i];if(a.hp>0)actorOrder.push({a,z:worldToCamera(a.x,1,a.z).z});}for(let i=0;i<allies.length;i++){const a=allies[i];if(a.hp>0)actorOrder.push({a,z:worldToCamera(a.x,1,a.z).z});}for(const a of remotePlayers.values()){if(a.hp>0)actorOrder.push({a,z:worldToCamera(a.x,1,a.z).z});}actorOrder.sort((a,b)=>b.z-a.z);for(let i=0;i<actorOrder.length;i++)enemyDraw(actorOrder[i].a);
  // Player rounds: bright short streaks show travel from the weapon, not instant hits.
  for(const b of playerBullets){const a=project(b.x-b.vx*.012,b.y-b.vy*.012,b.z-b.vz*.012),q=project(b.x,b.y,b.z);if(a&&q){ctx.strokeStyle=b.color||'#fff0a0';ctx.lineWidth=currentWeaponId==='sniper'?3.2:2.2;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(q.x,q.y);ctx.stroke();}}
  // Draw compact enemy bullet streaks; no blur-heavy effects on mobile.
@@ -1148,6 +1187,43 @@ let last=performance.now();function loop(t){
 }loop(last);
 </script>
 <div id="ladderHint" style="position:fixed;left:18px;bottom:24%;z-index:15;background:#102231d9;color:#fff;border:1px solid #72d7ff;border-radius:10px;padding:8px 12px;font:600 13px sans-serif;display:none;pointer-events:none">🪜 برای بالا رفتن، به نردبان نزدیک شو و جوی‌استیک را رو به جلو نگه دار</div>
-<script>setInterval(()=>{const h=document.getElementById("ladderHint");if(h&&typeof player!=="undefined"&&typeof getNearbyLadder==="function"&&typeof gameStarted!=="undefined")h.style.display=gameStarted&&getNearbyLadder(player.x,player.z)?"block":"none";},180);</script>
+<script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+<script>setInterval(()=>{const h=document.getElementById("ladderHint");if(h&&typeof player!=="undefined"&&typeof getNearbyLadder==="function"&&typeof gameStarted!=="undefined")h.style.display=gameStarted&&getNearbyLadder(player.x,player.z)?"block":"none";},180);
+// MINI FPS V76 online lobby: real Socket.IO room/matchmaking connection.
+(()=>{
+ const SERVER_URL='https://mini-fps-online.onrender.com';
+ const modal=document.getElementById('onlineDesigner');
+ const status=document.getElementById('onlineStatus');
+ const badge=document.getElementById('onlineBadge');
+ const roomBox=document.getElementById('roomCodeBox');
+ const codeValue=document.getElementById('roomCodeValue');
+ const codeInput=document.getElementById('joinCode');
+ const playersBox=document.getElementById('previewPlayers');
+ const openBtn=document.getElementById('onlineOpen');
+ const closeBtn=document.getElementById('onlineClose');
+ let socket=null, joinedRoom=null, selfId=null, roomPlayers=[];
+ let lastStateSent=0;
+ function applyRemote(raw){if(!raw||!raw.id||raw.id===selfId)return;let a=remotePlayers.get(raw.id);if(!a){a={id:raw.id,name:String(raw.name||'Player').slice(0,16),x:0,z:0,y:1.65,yaw:0,hp:100,maxHp:100,color:'#38bdf8',role:'ally',boss:false,dead:false,visAlpha:1};remotePlayers.set(raw.id,a);initialEnemyHealth.set(a,100);}a.name=String(raw.name||a.name||'Player').slice(0,16);a.tx=Number(raw.x)||0;a.tz=Number(raw.z)||0;a.tyaw=Number(raw.yaw)||0;a.thp=Math.max(0,Math.min(100,Number(raw.hp)||100));if(a._new){a.x=a.tx;a.z=a.tz;a.yaw=a.tyaw;a._new=false;}if(a.x===0&&a.z===0&&a.tx!==0){a.x=a.tx;a.z=a.tz;}a.hp=a.thp;}
+ function removeRemote(id){remotePlayers.delete(id);}
+ // Smooth remote movement between network updates without changing local V76 controls.
+ setInterval(()=>{for(const a of remotePlayers.values()){if(Number.isFinite(a.tx)){a.x+=(a.tx-a.x)*.38;a.z+=(a.tz-a.z)*.38;a.yaw+=(Math.atan2(Math.sin(a.tyaw-a.yaw),Math.cos(a.tyaw-a.yaw)))*.38;a.hp=a.thp??100;}}},50);
+ function say(title,msg){status.textContent='';const b=document.createElement('strong');b.textContent=title+' ';status.append(b,document.createTextNode(msg));}
+ function setBadge(text,online){badge.textContent=text;badge.style.borderColor=online?'#2aaf7d':'#bd984e';badge.style.background=online?'#12372c':'#332a18';badge.style.color=online?'#9dffd2':'#ffdc8b';badge.style.setProperty('--badge-dot',online?'#50e4a5':'#ffc65c');}
+ function renderPlayers(list){roomPlayers=Array.isArray(list)?list:[];playersBox.textContent='';const all=roomPlayers.slice();if(!all.some(p=>p.id===selfId)&&playerName)all.unshift({id:selfId,name:playerName});if(!all.length)all.push({id:'local',name:playerName||'بازیکن'});for(const p of all){const chip=document.createElement('span');chip.className='previewPlayer'+(p.id===selfId||p.id==='local'?' you':'');const dot=document.createElement('i');const label=document.createTextNode((p.id===selfId||p.id==='local'?'تو · ':'')+String(p.name||'Player'));chip.append(dot,label);playersBox.append(chip);}const count=roomPlayers.length|| (playerName?1:0);setBadge(joinedRoom?`متصل · ${count} بازیکن در اتاق`:'اتصال به سرور برقرار است',true);}
+ function connect(){if(socket&&socket.connected)return socket;if(typeof window.io!=='function'){setBadge('کتابخانهٔ اتصال بارگذاری نشد',false);say('خطا:','اینترنت مرورگر را بررسی کن و فایل را با اینترنت باز کن.');return null;}if(!socket){socket=window.io(SERVER_URL,{transports:['websocket','polling'],timeout:10000,reconnection:true,reconnectionAttempts:8,reconnectionDelay:1200});socket.on('connect',()=>{setBadge('اتصال به سرور برقرار است',true);say('متصل شد:','حالا می‌توانی بازی عمومی را پیدا کنی یا اتاق بسازی.');});socket.on('connect_error',()=>{setBadge('سرور فعلاً در دسترس نیست',false);say('اتصال ناموفق:','ممکن است سرور رایگان در خواب باشد؛ چند ثانیه دیگر دوباره امتحان کن.');});socket.on('disconnect',()=>{remotePlayers.clear();joinedRoom=null;selfId=null;setBadge('اتصال قطع شد',false);say('قطع اتصال:','در حال تلاش برای اتصال دوباره…');});socket.on('room:joined',data=>{joinedRoom=data.code;selfId=data.selfId;codeValue.textContent=data.code;codeInput.value=data.code;roomBox.style.display='block';renderPlayers(data.players);say('وارد اتاق شدی:',`کد ${data.code} · منتظر دوستت بمان.`);});socket.on('room:update',data=>{if(joinedRoom===data.code)renderPlayers(data.players);});socket.on('world:state',list=>{remotePlayers.clear();for(const p of (Array.isArray(list)?list:[]))applyRemote(p);});socket.on('player:state',p=>applyRemote(p));socket.on('room:error',msg=>say('خطای اتاق:',String(msg||'اتاق قابل دسترسی نیست.')));socket.on('player:joined',p=>{if(!roomPlayers.some(q=>q.id===p.id))roomPlayers.push({id:p.id,name:p.name});applyRemote(p.state||p);renderPlayers(roomPlayers);say('بازیکن جدید:',String(p.name||'بازیکن')+' وارد اتاق شد.');});socket.on('player:left',p=>{roomPlayers=roomPlayers.filter(q=>q.id!==p.id);removeRemote(p.id);renderPlayers(roomPlayers);say('اطلاع:', 'یک بازیکن از اتاق خارج شد.');});socket.on('game:event',ev=>{if(!ev||!selfId)return;if(ev.type==='fire'&&ev.id!==selfId){const sx=Number(ev.x)||0,sz=Number(ev.z)||0,syaw=Number(ev.yaw)||0;const dx=player.x-sx,dz=player.z-sz,dist=Math.hypot(dx,dz);const aim=Math.atan2(dx,dz);const diff=Math.abs(Math.atan2(Math.sin(aim-syaw),Math.cos(aim-syaw)));if(dist<45&&diff<Math.max(.025,Math.atan2(.42,dist))&&!blockedByWorld(sx,sz,player.x,player.z,1.25,1.25)){s.emit('game:event',{type:'hit',target:selfId,x:player.x,y:player.y,z:player.z});}}else if(ev.type==='hit'&&ev.target===selfId){hp=Math.max(0,hp-20);playerHitFlash=Math.max(playerHitFlash,.18);if(hp<=0&&!playerDowned){playerDowned=true;document.getElementById('gameOverScreen').style.display='flex';say('حذف شدی:','بازیکن دیگر به تو آسیب زد.');}}});socket.on('match:found',data=>{joinedRoom=data.code;codeValue.textContent=data.code;roomBox.style.display='block';say('مسابقه پیدا شد:',`کد اتاق ${data.code} · بازیکن‌های دیگر می‌توانند با این کد وارد شوند.`);});}return socket;}
+ setInterval(()=>{if(!socket||!socket.connected||!joinedRoom||!selfId||typeof player==='undefined')return;const now=performance.now();if(now-lastStateSent<66)return;lastStateSent=now;socket.volatile.emit('player:state',{x:player.x,y:player.y,z:player.z,yaw:player.yaw,hp:Math.max(0,Math.min(100,Number(hp)||0))});},33);
+ window.__miniFpsOnlineFire=(weapon)=>{if(socket&&socket.connected&&joinedRoom&&selfId){socket.emit('game:event',{type:'fire',x:player.x,y:player.y,z:player.z,yaw:player.yaw,weapon:String(weapon||'rifle').slice(0,12)});}};
+ function openLobby(){modal.style.display='flex';document.getElementById('previewName').textContent=(playerName||'بازیکن');renderPlayers(roomPlayers);connect();}
+ function closeLobby(){modal.style.display='none';}
+ openBtn?.addEventListener('click',openLobby);closeBtn?.addEventListener('click',closeLobby);
+ modal?.addEventListener('click',e=>{if(e.target===modal)closeLobby();});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.style.display==='flex')closeLobby();});
+ document.getElementById('findPublic')?.addEventListener('click',()=>{const s=connect();if(!s)return;if(!s.connected){say('در حال اتصال:','چند ثانیه صبر کن و دوباره بزن.');return;}say('جست‌وجو:', 'در حال پیدا کردن اتاق عمومی…');s.emit('match:find',{name:playerName||'Player'});});
+ document.getElementById('createRoom')?.addEventListener('click',()=>{const s=connect();if(!s)return;if(!s.connected){say('در حال اتصال:','چند ثانیه صبر کن و دوباره بزن.');return;}say('ساخت اتاق:', 'در حال ساخت اتاق خصوصی…');s.emit('room:create',{name:playerName||'Player'});});
+ document.getElementById('joinRoom')?.addEventListener('click',()=>{const code=codeInput.value.trim().toUpperCase();if(code.length!==5){say('کد نامعتبر:', 'کد اتاق باید دقیقاً ۵ حرف یا عدد باشد.');return;}const s=connect();if(!s)return;if(!s.connected){say('در حال اتصال:','چند ثانیه صبر کن و دوباره بزن.');return;}say('ورود به اتاق:', 'در حال بررسی کد…');s.emit('room:join',{code,name:playerName||'Player'});});
+ codeInput?.addEventListener('input',()=>{codeInput.value=codeInput.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5);});
+})();
+
+</script>
 </body>
 </html>
