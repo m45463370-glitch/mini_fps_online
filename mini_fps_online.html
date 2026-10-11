@@ -1195,7 +1195,7 @@ let last=performance.now();function loop(t){
 <script>setInterval(()=>{const h=document.getElementById("ladderHint");if(h&&typeof player!=="undefined"&&typeof getNearbyLadder==="function"&&typeof gameStarted!=="undefined")h.style.display=gameStarted&&getNearbyLadder(player.x,player.z)?"block":"none";},180);
 // MINI FPS V76 online lobby: real Socket.IO room/matchmaking connection.
 (function(){
- const SERVER_URL=location.origin;
+ const SERVER_URL='https://mini-fps-online.onrender.com';
  const $=id=>document.getElementById(id);
  const modal=$('onlineDesigner'),badge=$('onlineBadge'),status=$('onlineStatus'),serverList=$('serverList');
  let socket=null,joinedRoom=null,selfId=null,isHost=false,team='RED',roomInfo=null;
@@ -1204,7 +1204,11 @@ let last=performance.now();function loop(t){
  function home(){panels.forEach(p=>$(p).style.display='none');$('homeChoices').style.display='grid';}
  function say(t,m){status.textContent=t+' '+m;}
  function badgeText(t,ok){badge.textContent=t;badge.style.color=ok?'#9dffd2':'#ffdc8b';badge.style.border='1px solid '+(ok?'#2aaf7d':'#bd984e');}
- function connect(){if(socket)return socket; if(typeof window.io!=='function'){say('خطا:','کتابخانهٔ اتصال لود نشده.');return null;} socket=window.io(SERVER_URL,{transports:['websocket','polling'],timeout:12000,reconnection:true});
+ // Create/update a real remote player actor; no AI allies or enemies are spawned in online duel.
+ window.applyRemote=function(p){if(!p||!p.id||p.id===selfId)return;const old=remotePlayers.get(p.id)||{id:p.id,name:p.name||'PLAYER',role:'remote',boss:false,dead:false,spawnFx:0,muzzleFx:0};Object.assign(old,{name:String(p.name||old.name||'PLAYER'),x:Number(p.x)||0,y:Number(p.y)||0,z:Number(p.z)||0,yaw:Number(p.yaw)||0,facingYaw:Number(p.yaw)||0,hp:Math.max(0,Math.min(100,Number(p.hp)||100)),team:p.team||'RED',color:p.team==='BLUE'?'#2588ff':'#ef3848',gun:'#252a30',role:'remote',boss:false});remotePlayers.set(p.id,old);};
+ window.removeRemote=function(id){remotePlayers.delete(id);};
+ socket = null;
+ function connect(){if(socket)return socket; if(typeof window.io!=='function'){say('خطا:','کتابخانهٔ اتصال لود نشده.');return null;} socket=window.io(SERVER_URL,{transports:['polling','websocket'],timeout:12000,reconnection:true});
  socket.on('connect',()=>{badgeText('CONNECTED',true);say('اتصال برقرار شد.','یک گزینه انتخاب کن.');socket.emit('rooms:list');});
  socket.on('connect_error',e=>{badgeText('CONNECTION ERROR',false);say('خطای اتصال:',e?.message||'سرور در دسترس نیست.');});
  socket.on('disconnect',()=>{badgeText('DISCONNECTED',false);say('اتصال قطع شد:','در حال اتصال دوباره…');});
@@ -1215,7 +1219,7 @@ let last=performance.now();function loop(t){
  socket.on('room:error',m=>say('ROOM ERROR:',String(m||'Could not join room.')));
  socket.on('game:started',d=>{if(d.code!==joinedRoom)return;startLocalOnlineGame();modal.style.display='none';say('GAME STARTED:','Good luck!');});
  socket.on('round:update',d=>{if(d.code!==joinedRoom)return;const hud=$('teamScore');if(hud)hud.style.display='block';if($('policeCount'))$('policeCount').textContent=String(d.red||0);if($('criminalCount'))$('criminalCount').textContent=String(d.blue||0);if($('roundLabel'))$('roundLabel').textContent='ROUND '+(d.round||1);if(d.winner)say('ROUND FINISHED:',d.winner+' TEAM WINS · Next round in 5 seconds.');});
- socket.on('world:state',list=>{remotePlayers.clear();(list||[]).forEach(applyRemote);});socket.on('player:state',applyRemote);
+ socket.on('world:state',list=>{remotePlayers.clear();(list||[]).forEach(window.applyRemote);});socket.on('player:state',window.applyRemote);socket.on('player:respawn',d=>{if(d.id===selfId){hp=100;playerDowned=false;player.x=Number(d.x)||0;player.z=Number(d.z)||20;}else{const q=remotePlayers.get(d.id);if(q){q.hp=100;q.x=Number(d.x)||0;q.z=Number(d.z)||20;}}});socket.on('game:hit',d=>{if(d.target===selfId){hp=Math.max(0,Number(d.hp)||0);playerHitFlash=.18;}if(d.attacker===selfId){score+=d.killed?1:0;addKillFeed(playerName||'PLAYER',d.victimName||'PLAYER',d.killed?'kill':'hit');}});
  socket.on('player:left',p=>{removeRemote(p.id);say('PLAYER LEFT:', 'A player left the room.');});
  return socket;}
  function renderPlayers(list){$('previewPlayers').textContent='';(list||[]).forEach(p=>{const el=document.createElement('span');el.className='previewPlayer';el.textContent=(p.name||'Player')+' · '+(p.team||'');$('previewPlayers').append(el);});}
@@ -1227,10 +1231,10 @@ let last=performance.now();function loop(t){
  $('joinPrivate').onclick=()=>{const s=connect(),code=$('joinCode').value.trim().toUpperCase(),password=$('joinPassword').value;if(!/^[A-Z0-9]{5}$/.test(code)){say('کد نامعتبر:','کد باید ۵ حرف یا عدد باشد.');return;}const send=()=>s.emit('room:join',{code,password,name:playerName||'Player',team});if(s?.connected)send();else s?.once('connect',send);};$('joinCode').addEventListener('input',e=>e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5));
  $('pickRed').onclick=()=>{team='RED';if(socket?.connected&&joinedRoom)socket.emit('room:team',{team});$('pickRed').style.outline='2px solid white';$('pickBlue').style.outline='none';say('TEAM SELECTED:','RED TEAM');};$('pickBlue').onclick=()=>{team='BLUE';if(socket?.connected&&joinedRoom)socket.emit('room:team',{team});$('pickBlue').style.outline='2px solid white';$('pickRed').style.outline='none';say('TEAM SELECTED:','BLUE TEAM');};
  $('startOnlineGame').onclick=()=>{if(!socket?.connected||!joinedRoom)return say('خطا:','اول وارد روم شو.');socket.emit('room:start');};$('leaveOnlineRoom').onclick=()=>{if(socket?.connected)socket.emit('room:leave');joinedRoom=null;isHost=false;home();say('LEFT ROOM:','برگشتی به منو.');};
- function startLocalOnlineGame(){try{enemies.length=0;allies.length=0;enemyBullets.length=0;playerBullets.length=0;gameMode='team';gameStarted=true;gameWon=false;roundTransition=false;round=1;hp=100;playerDowned=false;$('startScreen').style.display='none';$('gameOverScreen').style.display='none';$('roundScreen').style.display='none';$('teamScore').style.display='block';$('missionLabel').style.display='none';$('roundLabel').textContent='ROUND 1';}catch(e){say('GAME START ERROR:',String(e.message||e));}}
+ function startLocalOnlineGame(){try{enemies.length=0;allies.length=0;enemyBullets.length=0;playerBullets.length=0;gameMode='online';gameStarted=true;gameWon=false;roundTransition=false;round=1;hp=100;playerDowned=false;$('startScreen').style.display='none';$('gameOverScreen').style.display='none';$('roundScreen').style.display='none';$('teamScore').style.display='block';$('missionLabel').style.display='none';$('roundLabel').textContent='ROUND 1';}catch(e){say('GAME START ERROR:',String(e.message||e));}}
  // keep the existing movement synchronisation and fire events
- setInterval(()=>{if(!socket?.connected||!joinedRoom||!selfId||typeof player==='undefined')return;socket.volatile.emit('player:state',{x:player.x,y:player.y,z:player.z,yaw:player.yaw,hp:Math.max(0,Math.min(100,Number(hp)||0))});},66);
- window.__miniFpsOnlineFire=weapon=>{if(socket?.connected&&joinedRoom&&selfId)socket.emit('game:event',{type:'fire',x:player.x,y:player.y,z:player.z,yaw:player.yaw,weapon:String(weapon||'rifle').slice(0,12)});};
+ setInterval(()=>{if(!socket?.connected||!joinedRoom||!selfId||typeof player==='undefined')return;socket.volatile.emit('player:state',{name:playerName||'Player',team,x:player.x,y:player.y,z:player.z,yaw:player.yaw,pitch:player.pitch,hp:Math.max(0,Math.min(100,Number(hp)||0))});},66);
+ window.__miniFpsOnlineFire=weapon=>{if(socket?.connected&&joinedRoom&&selfId)socket.emit('game:event',{type:'fire',x:player.x,y:player.y,z:player.z,yaw:player.yaw,pitch:player.pitch,damage:weaponSpecs[currentWeaponId]?.damage||20,weapon:String(weapon||'rifle').slice(0,12)});};
 })();
 
 </script>
