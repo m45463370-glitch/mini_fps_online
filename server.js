@@ -15,13 +15,15 @@ function roomInfo(room) { return { code: room.code, name: room.name, isPublic: r
 function publicRooms() { return [...rooms.values()].filter(r=>r.isPublic).map(r=>({code:r.code,name:r.name,players:r.players.size,maxPlayers:r.maxPlayers,duration:r.duration})); }
 function emitRoom(room) { io.to(room.code).emit('room:update', roomInfo(room)); }
 function roundInfo(room) { return {code:room.code, round:room.round, red:room.red, blue:room.blue, endsAt:room.endsAt, intermission:room.intermission||0, winner:room.winner||null}; }
-function startRound(room) { room.roundTimer && clearTimeout(room.roundTimer); room.intermission=0; room.winner=null; room.red=0; room.blue=0; room.endsAt=Date.now()+room.duration*60*1000; io.to(room.code).emit('round:update',roundInfo(room)); room.roundTimer=setTimeout(()=>endRound(room),room.duration*60*1000); }
-function endRound(room) { if(!rooms.has(room.code)||room.intermission) return; room.roundTimer && clearTimeout(room.roundTimer); room.winner=room.red===room.blue?'DRAW':room.red>room.blue?'RED':'BLUE'; room.intermission=5; io.to(room.code).emit('round:update',roundInfo(room)); room.roundTimer=setTimeout(()=>{if(!rooms.has(room.code))return;room.round++;startRound(room);},5000); }
+function spawnForTeam(team) { return team==='RED' ? {x:0,z:-38,y:1.65,yaw:0} : {x:0,z:38,y:1.65,yaw:Math.PI}; }
+function spawnAllPlayers(room) { for (const p of room.players.values()) { const pos=spawnForTeam(p.team); p.x=pos.x;p.y=pos.y;p.z=pos.z;p.yaw=pos.yaw;p.pitch=0;p.hp=100;io.to(room.code).emit('player:respawn',{id:p.id,hp:100,...pos,team:p.team}); } }
+function startRound(room) { room.roundTimer && clearTimeout(room.roundTimer); room.intermission=0; room.winner=null; room.red=0; room.blue=0; room.endsAt=Date.now()+room.duration*60*1000; if(room.started)spawnAllPlayers(room); io.to(room.code).emit('round:update',roundInfo(room)); room.roundTimer=setTimeout(()=>endRound(room),room.duration*60*1000); }
+function endRound(room, forcedWinner=null) { if(!rooms.has(room.code)||room.intermission) return; room.roundTimer && clearTimeout(room.roundTimer); room.winner=forcedWinner || (room.red===room.blue?'DRAW':room.red>room.blue?'RED':'BLUE'); room.intermission=5; io.to(room.code).emit('round:update',roundInfo(room)); room.roundTimer=setTimeout(()=>{if(!rooms.has(room.code))return;room.round++;startRound(room);},5000); }
 function makeRoom(isPublic, opts={}) { let c; do { c=code(); } while(rooms.has(c)); const room={code:c,isPublic,password:String(opts.password||''),hostId:null,started:false,name:cleanName(opts.name|| (isPublic?'Public server':'Private room')),duration:Math.max(2,Math.min(20,Number(opts.duration)||5)),maxPlayers:Math.max(2,Math.min(MAX_PLAYERS,Number(opts.maxPlayers)||MAX_PLAYERS)),players:new Map(),created:Date.now(),red:0,blue:0,round:1,roundTimer:null,endsAt:0,intermission:0,winner:null}; rooms.set(c,room); return room; }
 function joinRoom(socket, room, name) {
   if(room.players.size >= room.maxPlayers) return socket.emit('room:error','این اتاق پر است.');
   for(const r of rooms.values()) if(r.players.has(socket.id)) leaveRoom(socket, r);
-  const requestedTeam=String(socket.data.requestedTeam||'').toLowerCase(); const red=[...room.players.values()].filter(p=>p.team==='RED').length, blue=[...room.players.values()].filter(p=>p.team==='BLUE').length; const team=(requestedTeam==='red'||requestedTeam==='blue')?requestedTeam.toUpperCase():(red<=blue?'RED':'BLUE'); const p={id:socket.id,name:cleanName(name),ready:false,team,x:0,y:0,z:20,yaw:0,pitch:0,hp:100}; socket.data.requestedTeam=null;
+  const requestedTeam=String(socket.data.requestedTeam||'').toLowerCase(); const red=[...room.players.values()].filter(p=>p.team==='RED').length, blue=[...room.players.values()].filter(p=>p.team==='BLUE').length; const team=(requestedTeam==='red'||requestedTeam==='blue')?requestedTeam.toUpperCase():(red<=blue?'RED':'BLUE'); const spawn=spawnForTeam(team); const p={id:socket.id,name:cleanName(name),ready:false,team,...spawn,pitch:0,hp:100}; socket.data.requestedTeam=null;
   room.players.set(socket.id,p); socket.join(room.code); socket.data.room=room.code; if(!room.endsAt) startRound(room);
   if(room.hostId===null)room.hostId=socket.id; socket.emit('room:joined',{...roomInfo(room),isHost:room.hostId===socket.id,team:p.team,selfId:socket.id});
   socket.to(room.code).emit('player:joined',{id:p.id,name:p.name,state:p}); emitRoom(room);
@@ -68,16 +70,17 @@ io.on('connection', socket => {
         const pitch=Number(event.pitch)||0; if(Math.abs((victim.y||0)-(Number(event.y)||0))>3.2+Math.abs(pitch)*2)continue;
         best=victim;bestDist=dist;
       }
-      if(best){const dmg=Math.max(8,Math.min(45,Number(event.damage)||20));best.hp=Math.max(0,best.hp-dmg);const killed=best.hp<=0;
-        if(killed){if(attacker.team==='RED')room.red++;else room.blue++;best.hp=100;best.x=0;best.z=20;io.to(room.code).emit('player:respawn',{id:best.id,hp:100,x:best.x,z:best.z});}
-        io.to(room.code).emit('game:hit',{attacker:attacker.id,target:best.id,victimName:best.name,hp:best.hp,killed,red:room.red,blue:room.blue});
+      if(best){const dmg=25; // Balanced duel damage: normally four body hits, not a one-shot kill.best.hp=Math.max(0,best.hp-dmg);const killed=best.hp<=0;
+        if(killed){if(attacker.team==='RED')room.red++;else room.blue++;}
+        io.to(room.code).emit('game:hit',{attacker:attacker.id,attackerName:attacker.name,attackerTeam:attacker.team,target:best.id,victimName:best.name,victimTeam:best.team,hp:best.hp,killed,red:room.red,blue:room.blue});
         io.to(room.code).emit('round:update',roundInfo(room));
+        if(killed) endRound(room,attacker.team);
       }
     }
     socket.to(room.code).emit('game:event',{id:socket.id,type,x:ox,y:Number(event.y)||0,z:oz,yaw,weapon:String(event.weapon||'rifle').slice(0,12)});
   });
   socket.on('room:team',(data={})=>{const room=rooms.get(socket.data.room);if(!room)return;const p=room.players.get(socket.id);if(!p)return;const t=String(data.team||'').toUpperCase();if(t!=='RED'&&t!=='BLUE')return;p.team=t;emitRoom(room);});
-  socket.on('room:start',()=>{const room=rooms.get(socket.data.room);if(!room)return;if(room.hostId!==socket.id)return socket.emit('room:error','فقط سازندهٔ سرور می‌تواند بازی را شروع کند.');room.started=true;io.to(room.code).emit('game:started',{code:room.code});if(!room.endsAt)startRound(room);});
+  socket.on('room:start',()=>{const room=rooms.get(socket.data.room);if(!room)return;if(room.hostId!==socket.id)return socket.emit('room:error','فقط سازندهٔ سرور می‌تواند بازی را شروع کند.');room.started=true;spawnAllPlayers(room);io.to(room.code).emit('game:started',{code:room.code});if(!room.endsAt)startRound(room);});
   socket.on('room:leave',()=>{const room=rooms.get(socket.data.room);if(room)leaveRoom(socket,room);});
   socket.on('disconnect',()=>{const room=rooms.get(socket.data.room);if(room)leaveRoom(socket,room);});
 });
