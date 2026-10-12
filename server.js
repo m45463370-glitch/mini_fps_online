@@ -70,7 +70,10 @@ io.on('connection', socket => {
         const pitch=Number(event.pitch)||0; if(Math.abs((victim.y||0)-(Number(event.y)||0))>3.2+Math.abs(pitch)*2)continue;
         best=victim;bestDist=dist;
       }
-      if(best){const dmg=25; // Balanced duel damage: normally four body hits, not a one-shot kill.best.hp=Math.max(0,best.hp-dmg);const killed=best.hp<=0;
+      if(best){
+        const dmg = 25;
+        best.hp = Math.max(0, best.hp - dmg);
+        const killed = best.hp <= 0;
         if(killed){if(attacker.team==='RED')room.red++;else room.blue++;}
         io.to(room.code).emit('game:hit',{attacker:attacker.id,attackerName:attacker.name,attackerTeam:attacker.team,target:best.id,victimName:best.name,victimTeam:best.team,hp:best.hp,killed,red:room.red,blue:room.blue});
         io.to(room.code).emit('round:update',roundInfo(room));
