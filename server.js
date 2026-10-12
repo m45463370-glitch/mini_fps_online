@@ -71,7 +71,7 @@ io.on('connection', socket => {
         best=victim;bestDist=dist;
       }
       if(best){
-        const dmg = 25;
+        const dmg = 10; // Lower online damage: more hits required, not two-shot kills.
         best.hp = Math.max(0, best.hp - dmg);
         const killed = best.hp <= 0;
         if(killed){if(attacker.team==='RED')room.red++;else room.blue++;}
