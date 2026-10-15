@@ -1186,7 +1186,9 @@ function draw(){
 }
 let last=performance.now();function loop(t){
  const raw=(t-last)/1000;last=t;
- const dt=Math.min(.06,Math.max(0,raw));
+ const dt=Math.min(.05,Math.max(0,raw));
+ // Smooth remote-player motion between network snapshots without increasing movement speed.
+ for(const a of remotePlayers.values()){const k=Math.min(1,dt*12);if(a.targetX!==undefined)a.x+=(a.targetX-a.x)*k;if(a.targetY!==undefined)a.y+=(a.targetY-a.y)*k;if(a.targetZ!==undefined)a.z+=(a.targetZ-a.z)*k;}
  update(dt);draw();requestAnimationFrame(loop)
 }loop(last);
 </script>
@@ -1215,7 +1217,7 @@ let last=performance.now();function loop(t){
  socket.on('player:joined',p=>say('PLAYER JOINED:',`${p.name||'Player'} joined the room.`));
  socket.on('room:error',m=>say('ROOM ERROR:',String(m||'Could not join room.')));
  socket.on('game:started',d=>{if(d.code!==joinedRoom)return;startLocalOnlineGame();modal.style.display='none';say('GAME STARTED:','Good luck!');});
- socket.on('game:hit',d=>{if(d.target===selfId){hp=Math.max(0,Number(d.hp)||0);if(hp<=0){$('gameOverScreen').style.display='flex';say('YOU WERE DEFEATED:','Round ends when the timer expires.');}}const victim=remotePlayers.get(d.target);if(victim)victim.hp=Math.max(0,Number(d.hp)||0);if(d.killed&&d.attacker===selfId){coins+=250;updateCoins();addKillFeed(playerName||'PLAYER','DUEL KILL','player');}else if(d.killed&&d.target===selfId){say('DUEL:','You were defeated.');}});
+ socket.on('game:hit',d=>{if(d.target===selfId){hp=Math.max(0,Number(d.hp)||0);if(hp<=0){$('gameOverScreen').style.display='none';say('YOU WERE DEFEATED:','Round restarts in 5 seconds.');}}const victim=remotePlayers.get(d.target);if(victim)victim.hp=Math.max(0,Number(d.hp)||0);if(d.killed&&d.attacker===selfId){coins+=250;updateCoins();addKillFeed(playerName||'PLAYER','DUEL KILL','player');}else if(d.killed&&d.target===selfId){say('DUEL:','You were defeated. New round in 5 seconds.');}});
  socket.on('player:respawn',d=>{if(d.id===selfId){hp=100;player.x=Number(d.x)||0;player.y=Number(d.y)||1.65;player.z=Number(d.z)||0;player.yaw=Number(d.yaw)||0;player.pitch=0;$('gameOverScreen').style.display='none';}else applyRemote(d);});
  socket.on('round:update',d=>{if(d.code!==joinedRoom)return;const hud=$('teamScore');if(hud)hud.style.display='block';if($('policeCount'))$('policeCount').textContent=String(d.red||0);if($('criminalCount'))$('criminalCount').textContent=String(d.blue||0);if($('roundLabel'))$('roundLabel').textContent='ROUND '+(d.round||1);if(d.winner)say('ROUND FINISHED:',d.winner+' TEAM WINS · Next round in 5 seconds.');});
  socket.on('world:state',list=>{remotePlayers.clear();(list||[]).forEach(applyRemote);});socket.on('player:state',applyRemote);
@@ -1225,7 +1227,7 @@ let last=performance.now();function loop(t){
   if(!p||!p.id||p.id===selfId)return;
   let a=remotePlayers.get(p.id);
   if(!a){a={id:p.id,name:p.name||'OPPONENT',role:'remote',boss:false,dead:false,spawnFx:.25,muzzleFx:0,color:p.team==='RED'?'#ef394d':'#3198ff',hp:100,maxHp:100,preferredDist:12,strafeSign:1,strafePhase:0};remotePlayers.set(p.id,a);initialEnemyHealth.set(a,100);}
-  for(const k of ['x','y','z','yaw','pitch','hp'])if(Number.isFinite(Number(p[k])))a[k]=Number(p[k]);
+  for(const k of ['x','y','z','yaw','pitch','hp'])if(Number.isFinite(Number(p[k]))){if(a.role==='remote'&&['x','y','z'].includes(k)){const tk='target'+k.toUpperCase();if(a[tk]===undefined){a[k]=Number(p[k]);}a[tk]=Number(p[k]);}else a[k]=Number(p[k]);}
   a.name=p.name||a.name;a.color=p.team==='RED'?'#ef394d':'#3198ff';a.facingYaw=Number(p.yaw)||0;a.role='remote';a.hp=Math.max(0,Math.min(100,Number(a.hp)||0));
  }
  function removeRemote(id){const a=remotePlayers.get(id);if(a)initialEnemyHealth.delete(a);remotePlayers.delete(id);}

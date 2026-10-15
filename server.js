@@ -71,13 +71,14 @@ io.on('connection', socket => {
         best=victim;bestDist=dist;
       }
       if(best){
-        const dmg = 25;
+        const dmg = 5;
         best.hp = Math.max(0, best.hp - dmg);
         const killed = best.hp <= 0;
         if(killed){if(attacker.team==='RED')room.red++;else room.blue++;}
         io.to(room.code).emit('game:hit',{attacker:attacker.id,attackerName:attacker.name,attackerTeam:attacker.team,target:best.id,victimName:best.name,victimTeam:best.team,hp:best.hp,killed,red:room.red,blue:room.blue});
         io.to(room.code).emit('round:update',roundInfo(room));
-        // Keep the duel running after a kill; round ends only when its timer expires.
+        // A duel round ends immediately on a kill; the next round begins after 5 seconds.
+        if(killed) endRound(room, attacker.team);
       }
     }
     socket.to(room.code).emit('game:event',{id:socket.id,type,x:ox,y:Number(event.y)||0,z:oz,yaw,weapon:String(event.weapon||'rifle').slice(0,12)});
