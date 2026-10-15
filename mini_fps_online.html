@@ -286,7 +286,7 @@ button{min-width:82px;min-height:55px;border:1px solid #ffffff3b;border-radius:1
   <div id="privateCreatePanel" class="subPanel" style="display:none"><h3>ساخت سرور خصوصی</h3><label>رمز سرور<input id="privatePassword" maxlength="20" placeholder="رمز دلخواه"></label><label>اسم سرور<input id="privRoomName" maxlength="24" placeholder="Private Server"></label><label>حداکثر پلیر<select id="privRoomMax"><option>2</option><option>4</option><option selected>8</option></select></label><label>مدت راند<select id="privRoomDuration"><option>2</option><option selected>5</option><option>10</option><option>15</option><option>20</option></select></label><button id="createPrivate" type="button">ساخت سرور خصوصی</button><button class="backHome" type="button">برگشت</button></div>
   <div id="publicListPanel" class="subPanel" style="display:none"><h3>سرورهای عمومی</h3><button id="refreshPublic" type="button">جست‌وجوی دوباره</button><div id="serverList"></div><button class="backHome" type="button">برگشت</button></div>
   <div id="privateJoinPanel" class="subPanel" style="display:none"><h3>ورود به سرور خصوصی</h3><label>کد سرور<input id="joinCode" maxlength="5" placeholder="ABCDE"></label><label>رمز سرور<input id="joinPassword" maxlength="20" placeholder="رمز سرور"></label><button id="joinPrivate" type="button">پیدا کردن سرور و ورود</button><button class="backHome" type="button">برگشت</button></div>
-  <div id="roomLobby" class="subPanel" style="display:none"><h3 id="roomLobbyTitle">اتاق آماده است</h3><p id="roomLobbyMeta"></p><p>تیم خودت را انتخاب کن:</p><div class="teamPick"><button id="pickRed" type="button">🔴 RED TEAM</button><button id="pickBlue" type="button">🔵 BLUE TEAM</button></div><div id="roomCodeBox">کد سرور: <b id="roomCodeValue">-----</b></div><div id="previewPlayers"></div><button id="startOnlineGame" type="button">▶ START GAME</button><button id="leaveOnlineRoom" type="button">خروج از روم</button><button class="backHome" type="button">برگشت به منو</button></div>
+  <div id="roomLobby" class="subPanel" style="display:none"><h3 id="roomLobbyTitle">اتاق آماده است</h3><p id="roomLobbyMeta"></p><p>دوئل ۱ به ۱ — هر بازیکن حریف دیگری است:</p><div class="teamPick"><button id="pickRed" type="button">🔴 سمت قرمز</button><button id="pickBlue" type="button">🔵 سمت آبی</button></div><div id="roomCodeBox">کد سرور: <b id="roomCodeValue">-----</b></div><div id="previewPlayers"></div><button id="startOnlineGame" type="button">▶ START GAME</button><button id="leaveOnlineRoom" type="button">خروج از روم</button><button class="backHome" type="button">برگشت به منو</button></div>
   <div id="onlineStatus" role="status" aria-live="polite">در حال اتصال به سرور…</div>
  </section>
 </div>
@@ -442,7 +442,6 @@ function sfx(kind){
  }catch(_){ }
 }
 document.getElementById('startGame').addEventListener('click',()=>{
- if(typeof window.__miniFpsLeaveOnline==='function')window.__miniFpsLeaveOnline();
  if(!playerName){document.getElementById('nameModal').style.display='flex';document.getElementById('playerNameInput').focus();return;}
  ensureAudio();sfx('round');lastDamageHp=100;selectedMap='warehouse';gameMode=document.getElementById('modePick').value;configuredEnemyCount=Math.max(1,Math.min(6,parseInt(document.getElementById('enemyCount').value,10)||6));configuredAllyCount=gameMode==='team'?Math.max(0,Math.min(6,parseInt(document.getElementById('allyCount').value,10)||0)):0;teamDuration=Math.max(60,Math.min(300,parseInt(document.getElementById('teamDuration').value,10)||120));teamTimeLeft=teamDuration;teamRoundsSurvived=0;teamRespawnCooldown=0;missionKills=0;applyMap();if(collides(player.x,player.z)){player.x=0;player.z=0;}document.getElementById('missionLabel').textContent=gameMode==='team'?'🤝 تیمی • حذف آنمی‌ها و زنده ماندن تا پایان زمان':'🎯 تک‌نفره • شکست باس راند ۱۰';
  hp=100;score=0;coins=0;round=1;intermission=0;roundTransition=false;bossAlive=false;gameWon=false;ownedWeapons=new Set(['pistol']);document.getElementById('buyAK').textContent='خرید AK-47 — ۲۵۰۰ دلار';document.getElementById('buyLMG').textContent='خرید تیربار — ۵۰۰۰ دلار';document.getElementById('buySniper').textContent='خرید اسنایپر — ۳۵۰۰ دلار';currentWeaponId='pistol';for(const id of Object.keys(weaponStates)){weaponStates[id]={mag:weaponSpecs[id].magSize,reserve:weaponSpecs[id].reserve};}weapon.mag=12;weapon.reserve=72;weapon.magSize=12;weapon.damage=18;weapon.bulletSpeed=48;weapon.reloadTime=.85;weapon.reload=0;weapon.cool=0;syncWeaponStats();stamina=100;
@@ -976,7 +975,7 @@ function update(dt){
    const vl=Math.hypot(vx,vz)||1;vx/=Math.max(1,vl);vz/=Math.max(1,vl);
    const sp=1.75*dt;if(!enemyCollides(a,a.x+vx*sp,a.z))a.x+=vx*sp;if(!enemyCollides(a,a.x,a.z+vz*sp))a.z+=vz*sp;
    // Allies still fight effectively, but no longer erase enemies before the player can act.
-   a.cool-=dt;if(a.cool<=0){target.hp=Math.max(0,target.hp-(target.boss?8:12));a.muzzleFx=.07;a.cool=.78+Math.random()*.35;if(target.hp<=0&&!target.dead){target.dead=true;score++;missionKills++;coins+=250;updateCoins();addKillFeed(a.name||'Jack','enemy','ally');sfx('kill');if(combatEffects.length<MAX_COMBAT_EFFECTS)combatEffects.push({kind:'kill',x:target.x,z:target.z,t:.5});}}
+   a.cool-=dt;if(a.cool<=0){target.hp=Math.max(0,target.hp-(target.boss?8:12));a.muzzleFx=.07;a.cool=.78+Math.random()*.35;if(target.hp<=0&&!target.dead){target.dead=true;score++;missionKills++;addKillFeed(a.name||'Jack','enemy','ally');sfx('kill');if(combatEffects.length<MAX_COMBAT_EFFECTS)combatEffects.push({kind:'kill',x:target.x,z:target.z,t:.5});}}
   }else if(pd>5){
    vx=(player.x-a.x)/(pd||1);vz=(player.z-a.z)/(pd||1);
    for(const other of allies){if(other===a||other.hp<=0)continue;const sx=a.x-other.x,sz=a.z-other.z,sd=Math.hypot(sx,sz);if(sd>0&&sd<3.8){const push=(3.8-sd)/3.8;vx+=(sx/sd)*push;vz+=(sz/sd)*push;}}
@@ -1183,7 +1182,7 @@ function draw(){
  // Short-lived muzzle tracers and hit sparks make every shot readable.
  for(const fx of combatEffects){ctx.save();const alpha=Math.max(0,Math.min(1,fx.t/(fx.kind==='shot'?.16:fx.kind==='kill'?.5:.18)));if(fx.kind==='shot'){const a=project(fx.x1,fx.y1??1.45,fx.z1),b=project(fx.x2,fx.y2??1.25,fx.z2);if(a&&b){ctx.globalAlpha=alpha*.8;ctx.strokeStyle='#ffdc78';ctx.lineWidth=2;ctx.shadowBlur=0;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke()}}else{const a=project(fx.x,.9,fx.z);if(a){ctx.globalAlpha=alpha;ctx.strokeStyle=fx.kind==='kill'?'#ffd45c':'#ff604d';ctx.lineWidth=3;ctx.beginPath();ctx.arc(a.x,a.y,Math.max(5,a.s*(fx.kind==='kill'?.4:.2)),0,Math.PI*2);ctx.stroke()}}ctx.restore()}
  if(playerHitFlash>0){ctx.fillStyle=`rgba(255,25,35,${Math.min(.22,playerHitFlash*1.2)})`;ctx.fillRect(0,0,W,H)}
- if(hp<=0&&gameStarted&&!playerDowned&&!(window.__miniFpsOnlineActive&&window.__miniFpsOnlineActive())){document.getElementById('shopScreen').style.display='none';document.getElementById('roundScreen').style.display='none';document.getElementById('gameOverScreen').style.display='flex';ctx.fillStyle='#0008';ctx.fillRect(0,0,W,H)}
+ if(hp<=0&&gameStarted&&!playerDowned){document.getElementById('shopScreen').style.display='none';document.getElementById('roundScreen').style.display='none';document.getElementById('gameOverScreen').style.display='flex';ctx.fillStyle='#0008';ctx.fillRect(0,0,W,H)}
 }
 let last=performance.now();function loop(t){
  const raw=(t-last)/1000;last=t;
@@ -1196,16 +1195,17 @@ let last=performance.now();function loop(t){
 <script>setInterval(()=>{const h=document.getElementById("ladderHint");if(h&&typeof player!=="undefined"&&typeof getNearbyLadder==="function"&&typeof gameStarted!=="undefined")h.style.display=gameStarted&&getNearbyLadder(player.x,player.z)?"block":"none";},180);
 // MINI FPS V76 online lobby: real Socket.IO room/matchmaking connection.
 (function(){
- const SERVER_URL='https://mini-fps-online.onrender.com';
+ const SERVER_URL=location.origin;
+ let onlineActive=false;
  const $=id=>document.getElementById(id);
  const modal=$('onlineDesigner'),badge=$('onlineBadge'),status=$('onlineStatus'),serverList=$('serverList');
- let socket=null,joinedRoom=null,selfId=null,isHost=false,team='RED',roomInfo=null,onlineActive=false,onlineRespawnTimer=null;
+ let socket=null,joinedRoom=null,selfId=null,isHost=false,team='RED',roomInfo=null;
  const panels=['publicCreatePanel','privateCreatePanel','publicListPanel','privateJoinPanel','roomLobby'];
  function panel(id){$('homeChoices').style.display='none';panels.forEach(p=>$(p).style.display=p===id?'block':'none');}
  function home(){panels.forEach(p=>$(p).style.display='none');$('homeChoices').style.display='grid';}
  function say(t,m){status.textContent=t+' '+m;}
  function badgeText(t,ok){badge.textContent=t;badge.style.color=ok?'#9dffd2':'#ffdc8b';badge.style.border='1px solid '+(ok?'#2aaf7d':'#bd984e');}
- function connect(){if(socket)return socket; if(typeof window.io!=='function'){say('خطا:','کتابخانهٔ اتصال لود نشده.');return null;} socket=window.io(SERVER_URL,{transports:['polling','websocket'],timeout:12000,reconnection:true});
+ function connect(){if(socket)return socket; if(typeof window.io!=='function'){say('خطا:','کتابخانهٔ اتصال لود نشده.');return null;} socket=window.io(SERVER_URL,{transports:['websocket','polling'],timeout:12000,reconnection:true});
  socket.on('connect',()=>{badgeText('CONNECTED',true);say('اتصال برقرار شد.','یک گزینه انتخاب کن.');socket.emit('rooms:list');});
  socket.on('connect_error',e=>{badgeText('CONNECTION ERROR',false);say('خطای اتصال:',e?.message||'سرور در دسترس نیست.');});
  socket.on('disconnect',()=>{badgeText('DISCONNECTED',false);say('اتصال قطع شد:','در حال اتصال دوباره…');});
@@ -1215,34 +1215,21 @@ let last=performance.now();function loop(t){
  socket.on('player:joined',p=>say('PLAYER JOINED:',`${p.name||'Player'} joined the room.`));
  socket.on('room:error',m=>say('ROOM ERROR:',String(m||'Could not join room.')));
  socket.on('game:started',d=>{if(d.code!==joinedRoom)return;startLocalOnlineGame();modal.style.display='none';say('GAME STARTED:','Good luck!');});
- socket.on('game:hit',d=>{
-   if(!onlineActive||!d)return;
-   if(d.target===selfId){
-     hp=Math.max(0,Math.min(100,Number(d.hp)||0));
-     if(d.killed){
-       gameStarted=true;playerDowned=true;
-       $('gameOverScreen').style.display='none';
-       $('roundScreen').style.display='flex';
-       $('roundTitle').textContent='راند تمام شد';
-       $('roundText').textContent='راند بعدی تا ۵ ثانیهٔ دیگر شروع می‌شود.';
-       $('continueRound').textContent='منتظر راند بعدی بمان';
-       say('YOU WERE ELIMINATED:','Next round in 5 seconds.');
-     }
-   }
-   if(d.attacker===selfId&&d.killed){coins+=250;updateCoins();say('PLAYER ELIMINATED:','+250 coins');}
- });
- socket.on('player:respawn',d=>{
-   if(!onlineActive||!d||d.id!==selfId)return;
-   if(onlineRespawnTimer){clearTimeout(onlineRespawnTimer);onlineRespawnTimer=null;}
-   hp=100;playerDowned=false;player.x=Number(d.x)||0;player.y=Number(d.y)||1.65;player.z=Number(d.z)||0;player.yaw=Number(d.yaw)||0;player.pitch=0;
-   enemyBullets.length=0;playerBullets.length=0;gameWon=false;roundTransition=false;
-   $('gameOverScreen').style.display='none';$('roundScreen').style.display='none';$('startScreen').style.display='none';
-   gameStarted=true;say('NEW ROUND:','Fight!');
- });
- socket.on('round:update',d=>{if(d.code!==joinedRoom)return;const hud=$('teamScore');if(hud)hud.style.display='block';if($('policeCount'))$('policeCount').textContent=String(d.red||0);if($('criminalCount'))$('criminalCount').textContent=String(d.blue||0);if($('roundLabel'))$('roundLabel').textContent='ROUND '+(d.round||1);if(d.winner){say('ROUND FINISHED:',d.winner+' TEAM WINS · Next round in 5 seconds.');if(onlineActive){$('roundScreen').style.display='flex';$('roundTitle').textContent=d.winner==='DRAW'?'مساوی!':(d.winner==='RED'?'تیم قرمز برنده شد':'تیم آبی برنده شد');$('roundText').textContent='راند بعدی تا ۵ ثانیهٔ دیگر شروع می‌شود.';$('continueRound').textContent='منتظر بمان';}}});
+ socket.on('game:hit',d=>{if(d.target===selfId){hp=Math.max(0,Number(d.hp)||0);if(hp<=0){$('gameOverScreen').style.display='flex';say('YOU WERE DEFEATED:','Round ends when the timer expires.');}}const victim=remotePlayers.get(d.target);if(victim)victim.hp=Math.max(0,Number(d.hp)||0);if(d.killed&&d.attacker===selfId){coins+=250;updateCoins();addKillFeed(playerName||'PLAYER','DUEL KILL','player');}else if(d.killed&&d.target===selfId){say('DUEL:','You were defeated.');}});
+ socket.on('player:respawn',d=>{if(d.id===selfId){hp=100;player.x=Number(d.x)||0;player.y=Number(d.y)||1.65;player.z=Number(d.z)||0;player.yaw=Number(d.yaw)||0;player.pitch=0;$('gameOverScreen').style.display='none';}else applyRemote(d);});
+ socket.on('round:update',d=>{if(d.code!==joinedRoom)return;const hud=$('teamScore');if(hud)hud.style.display='block';if($('policeCount'))$('policeCount').textContent=String(d.red||0);if($('criminalCount'))$('criminalCount').textContent=String(d.blue||0);if($('roundLabel'))$('roundLabel').textContent='ROUND '+(d.round||1);if(d.winner)say('ROUND FINISHED:',d.winner+' TEAM WINS · Next round in 5 seconds.');});
  socket.on('world:state',list=>{remotePlayers.clear();(list||[]).forEach(applyRemote);});socket.on('player:state',applyRemote);
  socket.on('player:left',p=>{removeRemote(p.id);say('PLAYER LEFT:', 'A player left the room.');});
  return socket;}
+ function applyRemote(p){
+  if(!p||!p.id||p.id===selfId)return;
+  let a=remotePlayers.get(p.id);
+  if(!a){a={id:p.id,name:p.name||'OPPONENT',role:'remote',boss:false,dead:false,spawnFx:.25,muzzleFx:0,color:p.team==='RED'?'#ef394d':'#3198ff',hp:100,maxHp:100,preferredDist:12,strafeSign:1,strafePhase:0};remotePlayers.set(p.id,a);initialEnemyHealth.set(a,100);}
+  for(const k of ['x','y','z','yaw','pitch','hp'])if(Number.isFinite(Number(p[k])))a[k]=Number(p[k]);
+  a.name=p.name||a.name;a.color=p.team==='RED'?'#ef394d':'#3198ff';a.facingYaw=Number(p.yaw)||0;a.role='remote';a.hp=Math.max(0,Math.min(100,Number(a.hp)||0));
+ }
+ function removeRemote(id){const a=remotePlayers.get(id);if(a)initialEnemyHealth.delete(a);remotePlayers.delete(id);}
+ function leaveOnlineForLocal(){onlineActive=false;if(socket?.connected&&joinedRoom)socket.emit('room:leave');joinedRoom=null;selfId=null;isHost=false;remotePlayers.clear();}
  function renderPlayers(list){$('previewPlayers').textContent='';(list||[]).forEach(p=>{const el=document.createElement('span');el.className='previewPlayer';el.textContent=(p.name||'Player')+' · '+(p.team||'');$('previewPlayers').append(el);});}
  function renderRooms(list){if(!serverList)return;serverList.textContent='';if(!Array.isArray(list)||!list.length){serverList.textContent='هیچ سرور عمومی فعالی پیدا نشد.';return;}list.forEach(r=>{const row=document.createElement('div');row.style.cssText='display:flex;gap:7px;align-items:center;justify-content:space-between;padding:8px;margin-top:6px;border:1px solid #345264;border-radius:8px';const info=document.createElement('span');info.textContent=`${r.name} · ${r.players}/${r.maxPlayers} · ${r.duration} دقیقه`;const b=document.createElement('button');b.textContent='JOIN';b.style.width='auto';b.onclick=()=>{const s=connect();if(s?.connected)s.emit('room:join',{code:r.code,name:playerName||'Player',team});};row.append(info,b);serverList.append(row);});}
  function requestCreate(pub){const s=connect();if(!s)return;const data=pub?{isPublic:true,roomName:$('pubRoomName').value.trim()||'Public Server',maxPlayers:+$('pubRoomMax').value,duration:+$('pubRoomDuration').value,name:playerName||'Player',team}:{isPublic:false,password:$('privatePassword').value,roomName:$('privRoomName').value.trim()||'Private Server',maxPlayers:+$('privRoomMax').value,duration:+$('privRoomDuration').value,name:playerName||'Player',team};if(!pub&&!data.password.trim()){say('رمز لازم است:','برای سرور خصوصی یک رمز انتخاب کن.');return;}if(s.connected)s.emit('room:create',data);else s.once('connect',()=>s.emit('room:create',data));}
@@ -1251,10 +1238,10 @@ let last=performance.now();function loop(t){
  $('createPublic').onclick=()=>requestCreate(true);$('createPrivate').onclick=()=>requestCreate(false);$('refreshPublic').onclick=()=>{const s=connect();if(s?.connected)s.emit('rooms:list');};
  $('joinPrivate').onclick=()=>{const s=connect(),code=$('joinCode').value.trim().toUpperCase(),password=$('joinPassword').value;if(!/^[A-Z0-9]{5}$/.test(code)){say('کد نامعتبر:','کد باید ۵ حرف یا عدد باشد.');return;}const send=()=>s.emit('room:join',{code,password,name:playerName||'Player',team});if(s?.connected)send();else s?.once('connect',send);};$('joinCode').addEventListener('input',e=>e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5));
  $('pickRed').onclick=()=>{team='RED';if(socket?.connected&&joinedRoom)socket.emit('room:team',{team});$('pickRed').style.outline='2px solid white';$('pickBlue').style.outline='none';say('TEAM SELECTED:','RED TEAM');};$('pickBlue').onclick=()=>{team='BLUE';if(socket?.connected&&joinedRoom)socket.emit('room:team',{team});$('pickBlue').style.outline='2px solid white';$('pickRed').style.outline='none';say('TEAM SELECTED:','BLUE TEAM');};
- $('startOnlineGame').onclick=()=>{if(!socket?.connected||!joinedRoom)return say('خطا:','اول وارد روم شو.');socket.emit('room:start');};$('leaveOnlineRoom').onclick=()=>{if(socket?.connected)socket.emit('room:leave');joinedRoom=null;isHost=false;home();say('LEFT ROOM:','برگشتی به منو.');};
- function startLocalOnlineGame(){try{onlineActive=true;enemies.length=0;allies.length=0;enemyBullets.length=0;playerBullets.length=0;gameMode='team';gameStarted=true;gameWon=false;roundTransition=false;round=1;hp=100;playerDowned=false;$('startScreen').style.display='none';$('gameOverScreen').style.display='none';$('roundScreen').style.display='none';$('teamScore').style.display='block';$('missionLabel').style.display='none';$('roundLabel').textContent='ROUND 1';}catch(e){say('GAME START ERROR:',String(e.message||e));}}
- window.__miniFpsLeaveOnline=()=>{onlineActive=false;if(onlineRespawnTimer){clearTimeout(onlineRespawnTimer);onlineRespawnTimer=null;}if(socket?.connected&&joinedRoom)socket.emit('room:leave');joinedRoom=null;selfId=null;isHost=false;remotePlayers.clear();$('teamScore').style.display='none';};
- window.__miniFpsOnlineActive=()=>onlineActive;
+ $('startOnlineGame').onclick=()=>{if(!socket?.connected||!joinedRoom)return say('خطا:','اول وارد روم شو.');if((roomInfo?.players?.length||0)!==2)return say('هنوز آماده نیست:','برای شروع دوئل باید دقیقاً دو بازیکن داخل روم باشند.');socket.emit('room:start');};$('leaveOnlineRoom').onclick=()=>{if(socket?.connected)socket.emit('room:leave');onlineActive=false;joinedRoom=null;selfId=null;isHost=false;remotePlayers.clear();home();say('LEFT ROOM:','برگشتی به منو.');};
+ function startLocalOnlineGame(){try{onlineActive=true;enemies.length=0;allies.length=0;enemyBullets.length=0;playerBullets.length=0;gameMode='duel';gameStarted=true;gameWon=false;roundTransition=false;round=1;hp=100;playerDowned=false;$('startScreen').style.display='none';$('gameOverScreen').style.display='none';$('roundScreen').style.display='none';$('teamScore').style.display='block';$('missionLabel').style.display='none';$('roundLabel').textContent='DUEL 1v1';}catch(e){say('GAME START ERROR:',String(e.message||e));}}
+ // Ensure a normal local start leaves duel state instead of mixing local and online sessions.
+ const mainStart=$('startBtn')||$('startGame')||$('start');if(mainStart)mainStart.addEventListener('click',()=>{if(joinedRoom)leaveOnlineForLocal();},{capture:true});
  // keep the existing movement synchronisation and fire events
  setInterval(()=>{if(!socket?.connected||!joinedRoom||!selfId||typeof player==='undefined')return;socket.volatile.emit('player:state',{x:player.x,y:player.y,z:player.z,yaw:player.yaw,hp:Math.max(0,Math.min(100,Number(hp)||0))});},66);
  window.__miniFpsOnlineFire=weapon=>{if(socket?.connected&&joinedRoom&&selfId)socket.emit('game:event',{type:'fire',x:player.x,y:player.y,z:player.z,yaw:player.yaw,weapon:String(weapon||'rifle').slice(0,12)});};
