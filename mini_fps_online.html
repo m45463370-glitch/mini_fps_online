@@ -46,8 +46,8 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#11161b;fon
 .sight{position:absolute;right:145px;bottom:205px;width:65px;height:20px;border-radius:7px;background:#171b20;border:3px solid #0b0e11}
 #flash{position:absolute;left:8px;bottom:178px;width:65px;height:65px;background:#fff5a5;clip-path:polygon(50% 0,65% 34%,100% 50%,65% 66%,50% 100%,35% 66%,0 50%,35% 34%);opacity:0}
 #aimBtn{position:absolute;left:43px;bottom:180px;min-width:86px;width:86px;min-height:38px;padding:4px;border-radius:12px;background:#092033d9;border-color:#62c7ff;pointer-events:auto;font-size:12px}#aimBtn.active{background:#075b86;border-color:#a8e7ff;box-shadow:0 0 12px #35bfff88}
-#joystick{position:absolute;left:18px;bottom:30px;width:138px;height:138px;border-radius:50%;background:#ffffff12;border:1px solid #ffffff2e;box-shadow:inset 0 0 20px #0003;pointer-events:auto}
-#stick{position:absolute;left:44px;top:44px;width:50px;height:50px;border-radius:50%;background:#ffffff38;border:1px solid #ffffff38;box-shadow:0 4px 12px #0006}
+#joystick{position:absolute;left:18px;bottom:30px;width:138px;height:138px;border-radius:50%;background:#ffffff12;border:1px solid #ffffff2e;box-shadow:inset 0 0 20px #0003;pointer-events:auto;touch-action:none;user-select:none;-webkit-user-select:none}
+#stick{position:absolute;left:44px;top:44px;width:50px;height:50px;border-radius:50%;background:#ffffff38;border:1px solid #ffffff38;box-shadow:0 4px 12px #0006;pointer-events:none;touch-action:none}
 #buttons{position:absolute;right:18px;bottom:30px;display:flex;flex-direction:column;align-items:stretch;gap:8px;pointer-events:auto}
 #movementRow{display:flex;gap:7px;width:100%}
 #movementRow button{min-width:0;flex:1;width:50%;min-height:43px;font-size:12px}
@@ -131,7 +131,7 @@ button{min-width:82px;min-height:55px;border:1px solid #ffffff3b;border-radius:1
 <canvas id="c"></canvas>
 <div id="hud">
   <div id="info"><b>MINI FPS • V74</b><br>🕹️ حرکت و نگاه ۳۶۰°<br>🏃 SPRINT = سرعت بیشتر • 🦘 JUMP = جاخالی • 🧎 CROUCH = نشستن</div>
-  <div id="cross"></div><div id="teamScore" style="position:absolute;left:12px;top:12px;display:none;min-width:160px;padding:8px 10px;border-radius:12px;background:#07111de8;border:1px solid #ffffff30;font-size:12px;font-weight:900;line-height:1.8;box-shadow:0 4px 14px #0005"><div style="display:flex;justify-content:space-between;color:#7ecbff"><span>🔴 RED TEAM</span><b id="policeCount">0</b></div><div style="display:flex;justify-content:space-between;color:#ff8585"><span>🔵 BLUE TEAM</span><b id="criminalCount">0</b></div></div><div id="missionLabel" style="display:none">هدف: حذف ۱۰ آنمی</div>
+  <div id="cross"></div><div id="teamScore" style="position:absolute;left:12px;top:12px;display:none;min-width:160px;padding:8px 10px;border-radius:12px;background:#07111de8;border:1px solid #ffffff30;font-size:12px;font-weight:900;line-height:1.8;box-shadow:0 4px 14px #0005"><div style="display:flex;justify-content:space-between;color:#ff8585"><span>🔴 RED TEAM</span><b id="policeCount">0</b></div><div style="display:flex;justify-content:space-between;color:#7ecbff"><span>🔵 BLUE TEAM</span><b id="criminalCount">0</b></div></div><div id="missionLabel" style="display:none">هدف: حذف ۱۰ آنمی</div>
   <div id="coverToast" role="status">🛡️ پشت بتن پناه گرفتی</div><div id="killFeed" style="position:absolute;left:12px;bottom:228px;transform:none;width:min(210px,42vw);text-align:left;display:flex;flex-direction:column;gap:3px;pointer-events:none;font:900 10px Arial;text-shadow:0 1px 3px #000;z-index:4"></div>
   <div id="topHud"><div class="pill" id="roundLabel">راند ۱</div><div class="pill" id="coinLabel">$ ۰</div><button id="shopBtn" type="button">🛒 شاپ</button></div>
   <div id="gun" aria-hidden="true">
@@ -813,7 +813,7 @@ function updateJoy(e){
  jx=x/m;jy=y/m;
  stick.style.transform=`translate(${x}px,${y}px)`;
 }
-joy.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();jActive=true;const r=joy.getBoundingClientRect();joyCX=r.left+r.width/2;joyCY=r.top+r.height/2;joy.setPointerCapture(e.pointerId);updateJoy(e)});
+joy.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();jActive=true;const r=joy.getBoundingClientRect();joyCX=r.left+r.width/2;joyCY=r.top+r.height/2;try{joy.setPointerCapture(e.pointerId)}catch(_){}updateJoy(e)});
 joy.addEventListener('pointermove',e=>{if(jActive){e.preventDefault();updateJoy(e)}});
 function joyEnd(){jActive=false;jx=jy=0;stick.style.transform='translate(0,0)'}
 joy.addEventListener('pointerup',joyEnd);joy.addEventListener('pointercancel',joyEnd);
@@ -855,6 +855,7 @@ function playerActorCollides(px,pz){
  // Online duelists have a solid body radius too; the two players cannot walk through one another.
  if(typeof remotePlayers!=='undefined') for(const other of remotePlayers.values()){
   if(other.hp<=0)continue;
+  if(other.id===window.miniFpsSelfId)continue;
   if(Math.hypot(px-other.x,pz-other.z)<1.22)return true;
  }
  return false;
@@ -1227,7 +1228,7 @@ function removeRemote(id){if(id)remotePlayers.delete(id);}
  socket.on('connect_error',e=>{badgeText('CONNECTION ERROR',false);say('خطای اتصال:',e?.message||'سرور در دسترس نیست.');});
  socket.on('disconnect',()=>{badgeText('DISCONNECTED',false);say('اتصال قطع شد:','در حال اتصال دوباره…');});
  socket.on('rooms:list',list=>renderRooms(list));
- socket.on('room:joined',d=>{joinedRoom=d.code;selfId=d.selfId;roomInfo=d;isHost=!!d.isHost;team=d.team||team;$('roomCodeValue').textContent=d.code;$('roomLobbyTitle').textContent=d.name||'سرور';$('roomLobbyMeta').textContent=`${d.players?.length||1}/${d.maxPlayers} پلیر • ${d.duration} دقیقه • ${d.isPublic?'PUBLIC':'PRIVATE'}`;$('roomCodeBox').style.display=d.isPublic?'none':'block';$('startOnlineGame').style.display=isHost?'block':'none';renderPlayers(d.players||[]);panel('roomLobby');say('ROOM READY:','بازیکن‌ها می‌توانند وارد شوند. میزبان برای شروع روی START GAME بزند.');});
+ socket.on('room:joined',d=>{joinedRoom=d.code;selfId=d.selfId;window.miniFpsSelfId=d.selfId;roomInfo=d;isHost=!!d.isHost;team=d.team||team;$('roomCodeValue').textContent=d.code;$('roomLobbyTitle').textContent=d.name||'سرور';$('roomLobbyMeta').textContent=`${d.players?.length||1}/${d.maxPlayers} پلیر • ${d.duration} دقیقه • ${d.isPublic?'PUBLIC':'PRIVATE'}`;$('roomCodeBox').style.display=d.isPublic?'none':'block';$('startOnlineGame').style.display=isHost?'block':'none';renderPlayers(d.players||[]);panel('roomLobby');say('ROOM READY:','بازیکن‌ها می‌توانند وارد شوند. میزبان برای شروع روی START GAME بزند.');});
  socket.on('room:update',d=>{if(d.code!==joinedRoom)return;roomInfo=d;$('roomLobbyMeta').textContent=`${d.players.length}/${d.maxPlayers} پلیر • ${d.duration} دقیقه • ${d.isPublic?'PUBLIC':'PRIVATE'}`;renderPlayers(d.players||[]);});
  socket.on('player:joined',p=>say('PLAYER JOINED:',`${p.name||'Player'} joined the room.`));
  socket.on('room:error',m=>say('ROOM ERROR:',String(m||'Could not join room.')));
